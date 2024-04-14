@@ -4,7 +4,9 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers.chat import router
+from app.api.routers.chat import router as chat_router
+from app.api.routers.indexing import router as indexing_router
+from app.api.routers.rag import router as rag_router
 
 app = FastAPI()
 
@@ -19,7 +21,9 @@ if os.getenv("ENVIRONMENT", "dev") == "dev":
         allow_headers=["*"],
     )
 
-app.include_router(router, prefix="/api/chat")
+app.include_router(chat_router, prefix="/api/chat")
+app.include_router(indexing_router, prefix="/api/indexing")
+app.include_router(rag_router, prefix="/api/rag")
 
 
 if __name__ == "__main__":

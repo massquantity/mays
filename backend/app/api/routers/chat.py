@@ -7,8 +7,9 @@ from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import ChatMessage
 from pydantic import BaseModel
 
-if not os.getenv("MISTRAL_API_KEY"):
-    raise RuntimeError("Invalid mistral api key. Get it from https://console.mistral.ai/api-keys/")
+from ...utils import check_api_key
+
+check_api_key()
 
 router = APIRouter()
 
