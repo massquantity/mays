@@ -13,7 +13,7 @@ export default function ChatSection() {
     handleInputChange,
     reload,
     stop,
-  } = useChat({ api: 'http://localhost:8000/api/chat' });
+  } = useChat({ api: 'http://localhost:8000/api/rag' });
 
   return (
     <div className="space-y-4 max-w-5xl w-full">

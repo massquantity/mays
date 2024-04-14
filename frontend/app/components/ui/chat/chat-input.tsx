@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { ChatHandler } from '@/app/components/ui/chat/chat.interface';
+import FileUploader from '@/app/components/file-uploader';
 
 export default function ChatInput(
   props: Pick<
@@ -28,6 +29,7 @@ export default function ChatInput(
           value={props.input}
           onChange={props.handleInputChange}
         />
+        <FileUploader />
         <Button type="submit" disabled={props.isLoading}>
           Send messages
         </Button>
