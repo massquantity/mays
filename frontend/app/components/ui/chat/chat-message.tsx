@@ -21,11 +21,7 @@ export default function ChatMessage(chatMessage: Message) {
           variant="ghost"
           className="h-8 w-8 opacity-0 group-hover:opacity-100"
         >
-          {isCopied ? (
-            <Check className="h-4 w-4" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
+          {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>
       </div>
     </div>

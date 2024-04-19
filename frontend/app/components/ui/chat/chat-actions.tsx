@@ -4,10 +4,10 @@ import { Button } from '@/app/components/ui/button';
 import { ChatHandler } from '@/app/components/ui/chat/chat.interface';
 
 export default function ChatActions(
-  props: Pick<ChatHandler, "stop" | "reload"> & {
+  props: Pick<ChatHandler, 'stop' | 'reload'> & {
     showReload?: boolean;
     showStop?: boolean;
-  },
+  }
 ) {
   return (
     <div className="space-x-4">

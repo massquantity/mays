@@ -5,7 +5,7 @@ import { buttonVariants } from '@/app/components/ui/button';
 import { cn } from '@/app/components/ui/lib/utils';
 
 const INPUT_ID = 'uploadFileInput';
-const FILE_SIZE_LIMIT = 1024 * 1024 * 100;  // 100MB
+const FILE_SIZE_LIMIT = 1024 * 1024 * 100; // 100MB
 
 export default function FileUploader() {
   const [uploading, setUploading] = useState<boolean>(false);
@@ -18,7 +18,7 @@ export default function FileUploader() {
     await handleUpload(file);
     resetInput();
     setUploading(false);
-  }
+  };
 
   const handleUpload = async (file: File) => {
     if (file.size > FILE_SIZE_LIMIT) {
@@ -29,7 +29,7 @@ export default function FileUploader() {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
+      reader.onerror = (error) => reject(error);
     });
     await onUploadContent(base64, file.name);
   };
@@ -73,7 +73,7 @@ export default function FileUploader() {
         className={cn(
           buttonVariants({ variant: 'secondary', size: 'icon' }),
           'cursor-pointer',
-          uploading && 'opacity-50',
+          uploading && 'opacity-50'
         )}
       >
         {uploading ? (

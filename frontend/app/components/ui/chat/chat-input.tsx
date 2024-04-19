@@ -6,20 +6,10 @@ import { ChatHandler } from '@/app/components/ui/chat/chat.interface';
 import FileUploader from '@/app/components/file-uploader';
 
 export default function ChatInput(
-  props: Pick<
-    ChatHandler,
-    | "isLoading"
-    | "input"
-    | "handleSubmit"
-    | "handleInputChange"
-  >,
+  props: Pick<ChatHandler, 'isLoading' | 'input' | 'handleSubmit' | 'handleInputChange'>
 ) {
-
   return (
-    <form
-      onSubmit={props.handleSubmit}
-      className="rounded-xl bg-white p-4 shadow-xl space-y-4"
-    >
+    <form onSubmit={props.handleSubmit} className="space-y-4 rounded-xl bg-white p-4 shadow-xl">
       <div className="flex w-full items-start justify-between gap-4">
         <Input
           autoFocus
@@ -35,5 +25,5 @@ export default function ChatInput(
         </Button>
       </div>
     </form>
-  )
+  );
 }

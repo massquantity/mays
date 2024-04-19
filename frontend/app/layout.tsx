@@ -4,11 +4,11 @@ import { Inter } from 'next/font/google';
 
 import './globals.css';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Chat with LLM",
-  description: "Chat with LLM",
+  title: 'Chat with LLM',
+  description: 'Chat with LLM',
 };
 
 export default function RootLayout({
