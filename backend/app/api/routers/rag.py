@@ -5,12 +5,12 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
-from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.core.base.llms.types import ChatMessage, MessageRole
 from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
 from pydantic import BaseModel
 
+from .indexing import load_index
 from ...utils import PERSIST_DIR, check_api_key, global_model_settings
 
 check_api_key()
@@ -32,8 +32,7 @@ class ChatRequest(BaseModel):
 async def rag_chat(request: ChatRequest):
     logger.info(f"Loading index from {PERSIST_DIR}...")
     global_model_settings()
-    storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-    index = load_index_from_storage(storage_context)
+    index = load_index()
     logger.info(f"Finished loading index from {PERSIST_DIR}")
 
     if len(request.messages) == 0:

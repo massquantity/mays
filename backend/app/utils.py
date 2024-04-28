@@ -1,5 +1,4 @@
 import os
-import shutil
 from pathlib import Path
 
 from fastapi import HTTPException, status
@@ -12,15 +11,26 @@ DATA_DIR = "./data"
 PERSIST_DIR = "./index_storage"
 
 
-def create_dir():
+def create_save_dirs():
     data_dir, index_dir = Path(DATA_DIR), Path(PERSIST_DIR)
-    if not data_dir.exists():
+    if not data_dir.exists() or not data_dir.is_dir():
         data_dir.mkdir()
 
-    if not index_dir.exists():
+    if not index_dir.exists() or not index_dir.is_dir():
         index_dir.mkdir()
-    else:
-        shutil.rmtree(index_dir)
+        # shutil.rmtree(index_dir)
+
+
+def is_index_empty():
+    index_dir = Path(PERSIST_DIR)
+    return len(list(index_dir.iterdir())) == 0
+
+
+def clear_index_dir():
+    index_dir = Path(PERSIST_DIR)
+    for i in index_dir.iterdir():
+        if i.is_file():
+            i.unlink()
 
 
 def check_api_key():
