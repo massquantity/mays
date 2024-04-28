@@ -50,7 +50,7 @@ async def rag_chat(request: ChatRequest):
     messages = [ChatMessage(role=m.role, content=m.content) for m in request.messages]
     chat_engine = index.as_chat_engine(chat_mode="condense_plus_context")
     # response = await chat_engine.astream_chat(last_message.content, messages)
-    # todo: use `self._aclient.chat_stream` directly
+    # todo: use `llm._aclient.chat_stream` directly
     response = chat_engine.stream_chat(last_message.content, messages)
 
     async def token_stream_generator():
