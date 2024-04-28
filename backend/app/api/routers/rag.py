@@ -5,12 +5,12 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
-from llama_index.core import StorageContext, load_index_from_storage
 from llama_index.core.base.llms.types import ChatMessage, MessageRole
 from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
 from pydantic import BaseModel
 
+from .indexing import load_index
 from ...utils import PERSIST_DIR, check_api_key, global_model_settings
 
 check_api_key()
@@ -32,8 +32,7 @@ class ChatRequest(BaseModel):
 async def rag_chat(request: ChatRequest):
     logger.info(f"Loading index from {PERSIST_DIR}...")
     global_model_settings()
-    storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-    index = load_index_from_storage(storage_context)
+    index = load_index()
     logger.info(f"Finished loading index from {PERSIST_DIR}")
 
     if len(request.messages) == 0:
@@ -50,7 +49,7 @@ async def rag_chat(request: ChatRequest):
     messages = [ChatMessage(role=m.role, content=m.content) for m in request.messages]
     chat_engine = index.as_chat_engine(chat_mode="condense_plus_context")
     # response = await chat_engine.astream_chat(last_message.content, messages)
-    # todo: use `self._aclient.chat_stream` directly
+    # todo: use `llm._aclient.chat_stream` directly
     response = chat_engine.stream_chat(last_message.content, messages)
 
     async def token_stream_generator():

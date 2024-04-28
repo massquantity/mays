@@ -3,15 +3,22 @@ import logging
 from pathlib import Path
 
 from fastapi import APIRouter
-from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
+from llama_index.core import (
+    SimpleDirectoryReader,
+    StorageContext,
+    VectorStoreIndex,
+    load_index_from_storage,
+)
 from pydantic import BaseModel
 
 from ...utils import (
     DATA_DIR,
     PERSIST_DIR,
     check_api_key,
-    create_dir,
+    clear_index_dir,
+    create_save_dirs,
     global_model_settings,
+    is_index_empty,
 )
 
 check_api_key()
@@ -29,19 +36,30 @@ class UploadRequest(BaseModel):
 
 def save_file(request: UploadRequest):
     # todo: plain-text, docx
+    file_path = Path(DATA_DIR) / request.fileName
     file_content = base64.b64decode(request.content)
-    with open(Path(DATA_DIR) / request.fileName, "wb") as f:
-        f.write(file_content)
+    file_path.write_bytes(file_content)
     logger.info(f"Finished writing data to {DATA_DIR}...")
+    return file_path
 
 
-# todo: add new file, test OpenAI model
+def load_index():
+    storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
+    return load_index_from_storage(storage_context)
+
+
 @router.post("")
 async def indexing(request: UploadRequest):
     global_model_settings()
-    create_dir()
-    save_file(request)
-    documents = SimpleDirectoryReader(DATA_DIR).load_data()
-    index = VectorStoreIndex.from_documents(documents)
+    create_save_dirs()
+    file_path = save_file(request)
+    documents = SimpleDirectoryReader(input_files=[file_path]).load_data()
+    if is_index_empty():
+        index = VectorStoreIndex.from_documents(documents, show_progress=True)
+    else:
+        index = load_index()
+        for doc in documents:
+            index.insert(doc, show_progress=True)
+        clear_index_dir()
     index.storage_context.persist(persist_dir=PERSIST_DIR)
     logger.info(f"Finished indexing to {PERSIST_DIR}...")
