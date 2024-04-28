@@ -1,3 +1,6 @@
+import os
+os.environ["MISTRAL_API_KEY"] = "..."
+
 from fastapi.testclient import TestClient
 
 from ..main import app
