@@ -2,7 +2,7 @@ import { Loader2, Paperclip } from 'lucide-react';
 import { ChangeEvent, useState } from 'react';
 
 import { buttonVariants } from '@/app/components/ui/button';
-import { cn } from '@/app/components/ui/lib/utils';
+import { cn, fetchWIthTimeout } from '@/app/components/ui/lib/utils';
 
 const INPUT_ID = 'uploadFileInput';
 const FILE_SIZE_LIMIT = 1024 * 1024 * 100; // 100MB
@@ -38,7 +38,7 @@ export default function FileUploader() {
     // retrieve only the Base64 encoded string
     // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
     const base64 = content.split(',')[1];
-    const response = await fetch('http://localhost:8000/api/indexing', {
+    const response = await fetchWIthTimeout('http://localhost:8000/api/indexing', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
