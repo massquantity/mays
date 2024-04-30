@@ -13,8 +13,6 @@ from pydantic import BaseModel
 from .indexing import load_index
 from ...utils import PERSIST_DIR, check_api_key, global_model_settings
 
-check_api_key()
-
 logger = logging.getLogger("uvicorn")
 
 router = APIRouter()
@@ -77,6 +75,7 @@ async def simple_chat(request: ChatRequest):
 
 @router.post("")
 async def chat(request: ChatRequest):
+    check_api_key()
     if Path(PERSIST_DIR).exists():
         return await rag_chat(request)
     else:
