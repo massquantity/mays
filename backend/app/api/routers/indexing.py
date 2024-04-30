@@ -21,8 +21,6 @@ from ...utils import (
     is_index_empty,
 )
 
-check_api_key()
-
 logger = logging.getLogger("uvicorn")
 
 router = APIRouter()
@@ -50,6 +48,7 @@ def load_index():
 
 @router.post("")
 async def indexing(request: UploadRequest):
+    check_api_key()
     global_model_settings()
     create_save_dirs()
     file_path = save_file(request)
