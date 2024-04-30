@@ -3,8 +3,8 @@ import { Check, Copy, Download } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
-import { Button } from '@/app/components/ui/button';
-import { useCopyToClipboard } from '@/app/components/ui/chat/use-copy-to-clipboard';
+import { Button } from '@/components/ui/button';
+import { useCopyToClipboard } from '@/components/use-copy-to-clipboard';
 
 interface Props {
   language: string;

@@ -1,8 +1,8 @@
 import { Loader2, Paperclip } from 'lucide-react';
 import { ChangeEvent, useState } from 'react';
 
-import { buttonVariants } from '@/app/components/ui/button';
-import { cn, fetchWIthTimeout } from '@/app/components/ui/lib/utils';
+import { buttonVariants } from '@/components/ui/button';
+import { cn, fetchWIthTimeout } from '@/lib/utils';
 
 const INPUT_ID = 'uploadFileInput';
 const FILE_SIZE_LIMIT = 1024 * 1024 * 100; // 100MB

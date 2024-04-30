@@ -13,7 +13,7 @@ interface FetchOptions {
 }
 
 export async function fetchWIthTimeout(url: string, options: FetchOptions) {
-  const { timeout = 10_000 } = options;
+  const { timeout = 10_000 } = options;  // 10 seconds
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   const response = await fetch(url, {
