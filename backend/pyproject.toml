@@ -1,0 +1,42 @@
+# ruff check
+# ruff format --diff
+# isort . --diff
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+output-format  = "full"
+
+[tool.ruff.lint]
+select = [
+    # flake8-async
+    "ASYNC",
+    # pyflakes
+    "F",
+    # pycodestyle(Error, Warning)
+    "E",
+    "W",
+    # flake8-2020
+    "YTT",
+    # flake8-bugbear
+    "B",
+    # pandas-vet
+    "PD",
+    # NumPy-specific rules
+    "NPY",
+    # Ruff-specific rules
+    "RUF",
+]
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "double"
+
+[tool.isort]
+atomic = true
+force_grid_wrap = 0
+include_trailing_comma = true
+line_length = 88
+multi_line_output = 3
+profile = "black"
+reverse_relative = true
