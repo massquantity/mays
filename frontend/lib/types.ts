@@ -17,3 +17,11 @@ export interface ChatHandler {
   onFileUpload?: (file: File) => Promise<void>;
   onFileError?: (errMsg: string) => void;
 }
+
+export interface Chat extends Record<string, any> {
+  id: string;
+  title: string;
+  createdAt: Date;
+  path: string;
+  messages: Message[];
+}
