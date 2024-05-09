@@ -24,7 +24,7 @@ export default function RootLayout({
         <Providers attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
             <Header />
-            <main className="flex flex-1 flex-col bg-muted/50">{children}</main>
+            <main>{children}</main>
           </div>
         </Providers>
       </body>
