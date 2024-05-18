@@ -34,7 +34,11 @@ def clear_index_dir():
 
 
 def check_api_key():
-    if not os.getenv("MISTRAL_API_KEY"):
+    is_mistral_model = (
+        "mistral" in Settings.embed_model.model_name.lower()
+        or "mistral" in Settings.llm.__class__.__name__.lower()
+    )
+    if is_mistral_model and not os.getenv("MISTRAL_API_KEY"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid mistral api key. Get it from https://console.mistral.ai/api-keys/",
