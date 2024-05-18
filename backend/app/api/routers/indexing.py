@@ -2,7 +2,7 @@ import base64
 import logging
 from pathlib import Path
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from llama_index.core import (
     SimpleDirectoryReader,
     StorageContext,
@@ -46,11 +46,15 @@ def load_index():
     return load_index_from_storage(storage_context)
 
 
-@router.post("")
+@router.post(
+    "",
+    dependencies=[
+        Depends(check_api_key),
+        Depends(global_model_settings),
+        Depends(create_save_dirs),
+    ],
+)
 async def indexing(request: UploadRequest):
-    check_api_key()
-    global_model_settings()
-    create_save_dirs()
     file_path = save_file(request)
     documents = SimpleDirectoryReader(input_files=[file_path]).load_data()
     if is_index_empty():

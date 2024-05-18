@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from llama_index.core.base.llms.types import ChatMessage, MessageRole
 from mistralai.async_client import MistralAsyncClient
@@ -73,9 +73,8 @@ async def simple_chat(request: ChatRequest):
     return StreamingResponse(token_stream_generator(), media_type="text/plain")
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(check_api_key)])
 async def chat(request: ChatRequest):
-    check_api_key()
     if Path(PERSIST_DIR).exists():
         return await rag_chat(request)
     else:
