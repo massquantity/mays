@@ -35,7 +35,7 @@ export default function ChatSection({ id }: ChatProps) {
   }, [id]);
 
   const { messages, input, isLoading, handleSubmit, handleInputChange, reload, stop } = useChat({
-    api: 'http://localhost:8000/api/chat', // todo: rag
+    api: 'http://localhost:8000/api/rag',
     initialMessages,
     id,
     onResponse(response) {
