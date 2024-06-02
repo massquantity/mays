@@ -11,7 +11,7 @@ interface ChatPageProps {
 export function generateMetadata({ params }: ChatPageProps): Metadata {
   // const chat = loadChat(params.id);
   return {
-    title: 'Chat'
+    title: `Chat app - ${params.id}`
   }
  }
 
