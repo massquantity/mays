@@ -5,8 +5,9 @@ import { Inter } from 'next/font/google';
 import '@/app/globals.css';
 import { Providers } from '@/components/providers';
 import { Header } from '@/components/header';
+import { cn } from '@/lib/utils';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: 'Chat with Files',
@@ -20,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={cn('font-sans antialiased', inter.variable)}>
         <Providers attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
             <Header />
