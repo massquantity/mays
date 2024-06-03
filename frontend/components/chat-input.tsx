@@ -13,7 +13,7 @@ export default function ChatInput(
   return (
     <form
       onSubmit={props.handleSubmit}
-      className="fixed inset-x-0 bottom-8 w-full peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px]"
+      className="animate-in fixed inset-x-0 bottom-8 w-full duration-300 ease-in-out peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px]"
     >
       <div className="mx-auto flex gap-2 rounded-full bg-gray-200 sm:max-w-4xl sm:p-4">
         <Input
