@@ -6,7 +6,7 @@ This project builds a RAG chatbot based on LlamaIndex. It supports file uploadin
 
 ## Running
 
-First, install the dependencies and run the backend. Requires Python >= 3.8.
+First, install the dependencies and run the backend. Requires Python >= 3.9.
 ```bash
 $ cd backend
 $ pip install -r requirements.txt
