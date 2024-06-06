@@ -2,6 +2,7 @@
 
 import { Message } from 'ai';
 
+import { cleanCache } from '@/lib/clean-cache';
 import { Chat } from '@/lib/types';
 
 export function saveChat(id: string, messages: Message[]) {
@@ -37,4 +38,26 @@ export function loadChats(): Chat[] {
     }
   }
   return chats;
+}
+
+export function removeChat(id: string, path: string) {
+  let key = `chat:${id}`;
+  localStorage.removeItem(key);
+  cleanCache(path);
+}
+
+export function clearChats() {
+  let keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    let key = localStorage.key(i);
+    if (key && key.startsWith('chat')) {
+      keys.push(key);
+    }
+  }
+  for (const key of keys) {
+    const value = localStorage.getItem(key);
+    const chat = JSON.parse(value!) as Chat;
+    cleanCache(chat.path);
+    localStorage.removeItem(key);
+  }
 }

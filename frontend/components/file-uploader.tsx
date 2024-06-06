@@ -1,7 +1,9 @@
-import { Loader2, Paperclip } from 'lucide-react';
+import * as React from 'react';
+import { LoaderCircle, Paperclip } from 'lucide-react';
 import { ChangeEvent, useState } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn, fetchWIthTimeout } from '@/lib/utils';
 
 const INPUT_ID = 'uploadFileInput';
@@ -60,28 +62,33 @@ export default function FileUploader() {
   };
 
   return (
-    <div className="self-stretch">
-      <input
-        type="file"
-        id={INPUT_ID}
-        style={{ display: 'none' }}
-        onChange={onFileChange}
-        disabled={uploading}
-      />
-      <label
-        htmlFor={INPUT_ID}
-        className={cn(
-          buttonVariants({ variant: 'secondary', size: 'icon' }),
-          'cursor-pointer bg-purple-200/90 hover:bg-pink-200',
-          uploading && 'opacity-50'
-        )}
-      >
-        {uploading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <Paperclip className="h-4 w-4 -rotate-45" />
-        )}
-      </label>
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="self-stretch">
+          <input
+            type="file"
+            id={INPUT_ID}
+            style={{ display: 'none' }}
+            onChange={onFileChange}
+            disabled={uploading}
+          />
+          <label
+            htmlFor={INPUT_ID}
+            className={cn(
+              buttonVariants({ variant: 'secondary', size: 'icon' }),
+              'cursor-pointer bg-purple-200/90 text-foreground hover:bg-pink-200 dark:bg-background dark:text-foreground',
+              uploading && 'opacity-50'
+            )}
+          >
+            {uploading ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : (
+              <Paperclip className="h-4 w-4 -rotate-45" />
+            )}
+          </label>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>Upload file</TooltipContent>
+    </Tooltip>
   );
 }
