@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 import ChatActions from '@/components/chat-actions';
@@ -39,7 +39,7 @@ export default function ChatMessages(
         ))}
         {isPending && (
           <div className="flex items-center justify-center pt-10">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <LoaderCircle className="h-4 w-4 animate-spin" />
           </div>
         )}
       </div>

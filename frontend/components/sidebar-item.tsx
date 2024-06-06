@@ -3,6 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { SidebarActions } from '@/components/sidebar-actions';
 import { buttonVariants } from '@/components/ui/button';
 import { type Chat } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -10,10 +11,9 @@ import { cn } from '@/lib/utils';
 interface SidebarItemProps {
   index: number;
   chat: Chat;
-  children?: React.ReactNode;
 }
 
-export function SidebarItem({ index, chat, children }: SidebarItemProps) {
+export function SidebarItem({ index, chat }: SidebarItemProps) {
   const pathname = usePathname();
   const isActive = pathname === chat.path;
 
@@ -26,7 +26,7 @@ export function SidebarItem({ index, chat, children }: SidebarItemProps) {
         href={chat.path}
         className={cn(
           buttonVariants({ variant: 'ghost' }),
-          'group w-full px-8 transition-colors hover:bg-zinc-200/40 dark:hover:bg-zinc-300/10',
+          'w-full px-8 transition-colors hover:bg-zinc-200/40 dark:hover:bg-zinc-300/10',
           isActive && 'bg-zinc-200 pr-16 font-semibold dark:bg-zinc-800'
         )}
       >
@@ -39,6 +39,9 @@ export function SidebarItem({ index, chat, children }: SidebarItemProps) {
           </span>
         </div>
       </Link>
+      <div className="absolute right-2 top-2">
+        <SidebarActions chat={chat} />
+      </div>
     </div>
   );
 }

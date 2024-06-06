@@ -1,6 +1,7 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Toaster } from 'react-hot-toast';
 
 import '@/app/globals.css';
 import { Providers } from '@/components/providers';
@@ -23,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn('font-sans antialiased', inter.variable)}>
+        <Toaster />
         <Providers attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
             <Header />
