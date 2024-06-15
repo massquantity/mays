@@ -71,10 +71,13 @@ export default function ChatSection({ id }: ChatProps) {
         )}
       </div>
       <ChatInput
+        messages={messages}
         input={input}
         handleSubmit={handleSubmit}
         handleInputChange={handleInputChange}
         isLoading={isLoading}
+        stop={stop}
+        reload={reload}
       />
     </>
   );
