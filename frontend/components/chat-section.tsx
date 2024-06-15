@@ -7,7 +7,8 @@ import React, { useEffect, useReducer, useState } from 'react';
 
 import ChatInput from '@/components/chat-input';
 import ChatMessages from '@/components/chat-messages';
-import { loadChat, saveChat } from '@/lib/history-persisting';
+import { ChatScrollAnchor } from '@/components/chat-scroll-anchor';
+import { loadChat, loadChats, saveChat } from '@/lib/history-persisting';
 import { useLoadChat } from '@/lib/hooks/use-load-chats';
 
 interface ChatProps extends React.ComponentProps<'div'> {
@@ -65,9 +66,12 @@ export default function ChatSection({ id }: ChatProps) {
 
   return (
     <>
-      <div className="pb-20 pt-4 md:pt-10">
+      <div className="pb-40 pt-4 md:pt-10">
         {messages.length > 0 && (
-          <ChatMessages messages={messages} isLoading={isLoading} reload={reload} stop={stop} />
+          <>
+            <ChatMessages messages={messages} isLoading={isLoading} stop={stop} reload={reload} />
+            <ChatScrollAnchor trackVisibility={isLoading} />
+          </>
         )}
       </div>
       <ChatInput
