@@ -19,12 +19,11 @@ export default function ChatSection({ id }: ChatProps) {
   const path = usePathname();
   const isNewChat = path === '/';
   const [initialMessages, setInitialMessages] = useState<Message[]>();
-  // const [isMessageEnd, setMessageEnd] = useState(false);
   const [isMessageEnd, setMessageEnd] = useReducer((_: boolean, action: boolean) => action, false);
-  const { incrementChatNum } = useLoadChat();
+  const [initChats, setInitChat] = useState<boolean>(true);
+  const { setChatList } = useLoadChat();
 
   useEffect(() => {
-    // console.log(`chat message id: ${id}, path: ${path}`)
     if (isNewChat) {
       setInitialMessages(undefined);
     } else {
@@ -32,7 +31,7 @@ export default function ChatSection({ id }: ChatProps) {
       const m = chat?.messages ?? undefined;
       setInitialMessages(m);
     }
-  }, [id]);
+  }, [id, isNewChat]);
 
   const { messages, input, isLoading, handleSubmit, handleInputChange, reload, stop } = useChat({
     api: 'http://localhost:8000/api/rag',
@@ -46,7 +45,7 @@ export default function ChatSection({ id }: ChatProps) {
     onFinish(_message) {
       setMessageEnd(true);
       if (!path.includes('chat')) {
-        incrementChatNum();
+        setInitChat(true);
         window.history.pushState({}, '', `/chat/${id}`);
       }
     },
@@ -56,8 +55,13 @@ export default function ChatSection({ id }: ChatProps) {
     if (isMessageEnd) {
       saveChat(id, messages);
     }
+    if (initChats) {
+      const chatList = loadChats();
+      setChatList(chatList);
+    }
     setMessageEnd(false);
-  }, [isMessageEnd]);
+    setInitChat(false);
+  }, [isMessageEnd, initChats]);
 
   return (
     <>
