@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 
-import { loadChats } from '@/lib/history-persisting';
 import { Chat } from '@/lib/types';
 
 interface LoadChatContext {
   chatList?: Chat[];
-  chatListNum: number;
-  incrementChatNum: () => void;
+  setChatList: (chats: Chat[]) => void;
 }
 
 const LoadChatContext = React.createContext<LoadChatContext | undefined>(undefined);
@@ -22,18 +20,10 @@ export function useLoadChat() {
 }
 
 export function LoadChatProvider({ children }: { children: React.ReactNode }) {
-  const [chatListNum, setChatListNum] = React.useState(0);
   const [chatList, setChatList] = React.useState<Chat[]>();
 
-  const incrementChatNum = () => setChatListNum((n) => n + 1);
-
-  useEffect(() => {
-    const chats = loadChats();
-    setChatList(chats);
-  }, [chatListNum]);
-
   return (
-    <LoadChatContext.Provider value={{ chatList, chatListNum, incrementChatNum }}>
+    <LoadChatContext.Provider value={{ chatList, setChatList }}>
       {children}
     </LoadChatContext.Provider>
   );
