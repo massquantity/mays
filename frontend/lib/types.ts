@@ -12,16 +12,15 @@ export interface ChatHandler {
     }
   ) => void;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleDelete: (messageId: string) => void;
   reload?: () => void;
   stop?: () => void;
-  onFileUpload?: (file: File) => Promise<void>;
-  onFileError?: (errMsg: string) => void;
 }
 
 export interface Chat extends Record<string, any> {
-  id: string;
+  chatId: string;
   title: string;
-  createdAt: Date;
+  createdAt: number;
   path: string;
   messages: Message[];
 }

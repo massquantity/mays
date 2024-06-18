@@ -61,13 +61,13 @@ export function SidebarActions({ chat }: { chat: Chat }) {
               onClick={(event) => {
                 event.preventDefault();
                 startRemoveTransition(() => {
-                  removeChat(chat.id, chat.path);
+                  removeChat(chat.chatId, chat.path);
                   setDeleteDialogOpen(false);
                   window.location.reload();
                   if (isActive) {
                     window.location.replace('/');
                   }
-                  toast.success(`Chat ${chat.id} deleted!`);
+                  toast.success(`Chat ${chat.chatId} deleted!`);
                 });
               }}
             >

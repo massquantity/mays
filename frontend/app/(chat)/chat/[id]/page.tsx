@@ -17,5 +17,5 @@ export function generateMetadata({ params }: ChatPageProps): Metadata {
 
 export default function ChatPage({ params }: ChatPageProps) {
   // console.log(`chat page id: ${params.id}`)
-  return <ChatSection id={params.id} />;
+  return <ChatSection chatId={params.id} />;
 }

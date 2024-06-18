@@ -3,6 +3,7 @@
 import { Message } from 'ai';
 import { useChat } from 'ai/react';
 import { usePathname } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 import React, { useEffect, useReducer, useState } from 'react';
 
 import ChatInput from '@/components/chat-input';
@@ -13,10 +14,10 @@ import { useLoadChat } from '@/lib/hooks/use-load-chats';
 
 interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[];
-  id: string;
+  chatId: string;
 }
 
-export default function ChatSection({ id }: ChatProps) {
+export default function ChatSection({ chatId }: ChatProps) {
   const path = usePathname();
   const isNewChat = path === '/';
   const [initialMessages, setInitialMessages] = useState<Message[]>();
@@ -28,33 +29,37 @@ export default function ChatSection({ id }: ChatProps) {
     if (isNewChat) {
       setInitialMessages(undefined);
     } else {
-      const chat = loadChat(id);
+      const chat = loadChat(chatId);
       const m = chat?.messages ?? undefined;
       setInitialMessages(m);
     }
-  }, [id, isNewChat]);
+  }, [chatId, isNewChat]);
 
-  const { messages, input, isLoading, handleSubmit, handleInputChange, reload, stop } = useChat({
-    api: 'http://localhost:8000/api/rag',
-    initialMessages,
-    id,
-    onResponse(response) {
-      if (response.status !== 200) {
-        window.alert(response.statusText);
-      }
-    },
-    onFinish(_message) {
-      setMessageEnd(true);
-      if (!path.includes('chat')) {
-        setInitChat(true);
-        window.history.pushState({}, '', `/chat/${id}`);
-      }
-    },
-  });
+  const { messages, setMessages, input, isLoading, handleSubmit, handleInputChange, reload, stop } =
+    useChat({
+      api: 'http://localhost:8000/api/rag',
+      initialMessages,
+      id: chatId,
+      onResponse(response) {
+        if (response.status !== 200) {
+          throw new Error(response.statusText);
+        }
+      },
+      onError(_error) {
+        toast.error('Failed to fetch rag result from backend.')
+      },
+      onFinish(_message) {
+        setMessageEnd(true);
+        if (!path.includes('chat')) {
+          setInitChat(true);
+          window.history.pushState({}, '', `/chat/${chatId}`);
+        }
+      },
+    });
 
   useEffect(() => {
     if (isMessageEnd) {
-      saveChat(id, messages);
+      saveChat(chatId, messages);
     }
     if (initChats) {
       const chatList = loadChats();
@@ -64,12 +69,24 @@ export default function ChatSection({ id }: ChatProps) {
     setInitChat(false);
   }, [isMessageEnd, initChats]);
 
+  const handleDelete = (messageId: string) => {
+    const newMessages = messages.filter((m) => m.id !== messageId);
+    setMessages(newMessages);
+    saveChat(chatId, newMessages);
+  };
+
   return (
     <>
       <div className="pb-40 pt-4 md:pt-10">
         {messages.length > 0 && (
           <>
-            <ChatMessages messages={messages} isLoading={isLoading} stop={stop} reload={reload} />
+            <ChatMessages
+              messages={messages}
+              isLoading={isLoading}
+              stop={stop}
+              reload={reload}
+              handleDelete={handleDelete}
+            />
             <ChatScrollAnchor trackVisibility={isLoading} />
           </>
         )}

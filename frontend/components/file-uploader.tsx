@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { LoaderCircle, Paperclip } from 'lucide-react';
 import { ChangeEvent, useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 import { buttonVariants } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -20,11 +21,13 @@ export default function FileUploader() {
     await handleUpload(file);
     resetInput();
     setUploading(false);
+    toast.success('Upload success!');
   };
 
   const handleUpload = async (file: File) => {
     if (file.size > FILE_SIZE_LIMIT) {
-      window.alert(`File size exceeded. Limit is ${FILE_SIZE_LIMIT / 1024 / 1024} MB.`);
+      toast.error(`File size exceeded. Limit is ${FILE_SIZE_LIMIT / 1024 / 1024} MB.`);
+      throw new Error(`Failed to upload file`);
     }
 
     const base64 = await new Promise<string>((resolve, reject) => {

@@ -15,7 +15,7 @@ export function SidebarList() {
         {chatList?.length ? (
           <div className="space-y-2 px-2">
             {chatList.map((chat, index) => (
-              <SidebarItem key={chat.id} index={index} chat={chat} />
+              <SidebarItem key={chat.chatId} index={index} chat={chat} />
             ))}
           </div>
         ) : (
