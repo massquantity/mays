@@ -37,7 +37,7 @@ export function loadChats(): Chat[] {
       chats.push(chat);
     }
   }
-  return chats;
+  return chats.sort((a, b) => b.createdAt - a.createdAt);
 }
 
 export function removeChat(id: string, path: string) {

@@ -6,10 +6,11 @@ import ChatMessage from '@/components/chat-message';
 import { ChatHandler } from '@/lib/types';
 
 export default function ChatMessages(
-  props: Pick<ChatHandler, 'messages' | 'isLoading' | 'reload' | 'stop'>
+  props: Pick<ChatHandler, 'messages' | 'isLoading' | 'reload' | 'stop' | 'handleDelete'>
 ) {
-  const messageLength = props.messages.length;
-  const lastMessage = props.messages[messageLength - 1];
+  const messages = props.messages;
+  const messageLength = messages.length;
+  const lastMessage = messages[messageLength - 1];
 
   const isLastMessageFromAssistant = messageLength > 0 && lastMessage?.role !== 'user';
   const isPending = props.isLoading && !isLastMessageFromAssistant;
@@ -18,8 +19,14 @@ export default function ChatMessages(
     <div
       className="mx-auto flex h-full max-w-4xl flex-col gap-4 divide-y overflow-y-auto pb-4 pl-[4rem]" // h-[80vh]
     >
-      {props.messages.map((m) => (
-        <ChatMessage key={m.id} {...m} />
+      {messages.map((m, i) => (
+        <ChatMessage
+          key={m.id}
+          chatMessage={m}
+          isLoading={props.isLoading}
+          isLastMessage={i === messages.length - 1}
+          handleDelete={props.handleDelete}
+        />
       ))}
       {isPending && (
         <div className="flex items-center justify-center pt-10">

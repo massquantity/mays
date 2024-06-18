@@ -21,7 +21,7 @@ export default function ChatInput(
   const showStop = props.stop && props.isLoading;
   const showReload = props.reload && !props.isLoading && isLastMessageFromAssistant;
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault();
       props.handleSubmit(event as unknown as React.FormEvent<HTMLFormElement>);
