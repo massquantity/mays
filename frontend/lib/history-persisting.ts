@@ -5,29 +5,29 @@ import { Message } from 'ai';
 import { cleanCache } from '@/lib/clean-cache';
 import { Chat } from '@/lib/types';
 
-export function saveChat(id: string, messages: Message[]) {
+export function saveChat(chatId: string, messages: Message[]) {
   if (messages.length > 0) {
     const title = messages[0].content.substring(0, 100);
     const createdAt = Date.now();
-    const path = `/chat/${id}`;
+    const path = `/chat/${chatId}`;
     const chat = {
-      id,
+      chatId,
       title,
       createdAt,
       path,
       messages,
     };
-    localStorage.setItem(`chat:${id}`, JSON.stringify(chat));
+    localStorage.setItem(`chat:${chatId}`, JSON.stringify(chat));
   }
 }
 
-export function loadChat(id: string): Chat | null {
-  const key = `chat:${id}`;
+export function loadChat(chatId: string): Chat | null {
+  const key = `chat:${chatId}`;
   const value = localStorage.getItem(key);
   return value ? (JSON.parse(value) as Chat) : null;
 }
 
-export function loadChats(): Chat[] {
+export function loadAllChats(): Chat[] {
   let chats = [];
   for (let i = 0; i < localStorage.length; i++) {
     let key = localStorage.key(i)!;
@@ -40,13 +40,13 @@ export function loadChats(): Chat[] {
   return chats.sort((a, b) => b.createdAt - a.createdAt);
 }
 
-export function removeChat(id: string, path: string) {
-  let key = `chat:${id}`;
+export function removeChat(chatId: string, path: string) {
+  let key = `chat:${chatId}`;
   localStorage.removeItem(key);
   cleanCache(path);
 }
 
-export function clearChats() {
+export function clearAllChats() {
   let keys = [];
   for (let i = 0; i < localStorage.length; i++) {
     let key = localStorage.key(i);
