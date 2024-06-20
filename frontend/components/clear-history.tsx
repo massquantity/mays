@@ -14,7 +14,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { clearChats } from '@/lib/history-persisting';
+import { clearAllChats } from '@/lib/history-persisting';
 
 export function ClearHistory({ disabled }: { disabled: boolean }) {
   const [open, setOpen] = React.useState(false);
@@ -43,10 +43,10 @@ export function ClearHistory({ disabled }: { disabled: boolean }) {
             onClick={(event) => {
               event.preventDefault();
               startTransition(() => {
-                clearChats();
+                clearAllChats();
                 setOpen(false);
                 location.reload();
-                location.replace('/')
+                location.replace('/');
                 // router.refresh();
                 // router.push('/');
               });
