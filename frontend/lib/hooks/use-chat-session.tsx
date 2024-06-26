@@ -6,8 +6,8 @@ import { usePathname } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useCallback, useEffect, useReducer, useState } from 'react';
 
+import { useChatStore } from '@/lib/chat-store';
 import { useLoadChat } from '@/lib/hooks/use-load-chats';
-import { loadAllChats, loadChat, saveChat } from '@/lib/history-persisting';
 
 export function useChatSession(chatId: string) {
   const path = usePathname();
@@ -16,6 +16,7 @@ export function useChatSession(chatId: string) {
   const [isMessageEnd, setMessageEnd] = useReducer((_: boolean, action: boolean) => action, false);
   const [initSidebar, setInitSidebar] = useState<boolean>(true);
   const { setChatList } = useLoadChat();
+  const { saveChat, loadChat, loadAllChats } = useChatStore((state) => state);
 
   const loadChatHistory = useCallback(() => {
     if (isNewChat) {

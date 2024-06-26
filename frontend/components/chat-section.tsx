@@ -6,7 +6,7 @@ import React from 'react';
 import ChatInput from '@/components/chat-input';
 import ChatMessages from '@/components/chat-messages';
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor';
-import { saveChat } from '@/lib/history-persisting';
+import { useChatStore } from '@/lib/chat-store';
 import { useChatSession } from '@/lib/hooks/use-chat-session';
 
 interface ChatProps extends React.ComponentProps<'div'> {
@@ -15,6 +15,7 @@ interface ChatProps extends React.ComponentProps<'div'> {
 }
 
 export default function ChatSection({ chatId }: ChatProps) {
+  const saveChat = useChatStore((state) => state.saveChat);
   const { messages, setMessages, input, isLoading, handleSubmit, handleInputChange, reload, stop } =
     useChatSession(chatId);
 

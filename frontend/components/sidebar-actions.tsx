@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { removeChat } from '@/lib/history-persisting';
+import { useChatStore } from '@/lib/chat-store';
 import { Chat } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +24,7 @@ export function SidebarActions({ chat }: { chat: Chat }) {
   const isActive = pathname === chat.path;
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [isRemovePending, startRemoveTransition] = React.useTransition();
+  const removeChat = useChatStore((state) => state.removeChat);
 
   return (
     <>
