@@ -14,11 +14,12 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { clearAllChats } from '@/lib/history-persisting';
+import { useChatStore } from '@/lib/chat-store';
 
 export function ClearHistory({ disabled }: { disabled: boolean }) {
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
+  const clearAllChats = useChatStore((state) => state.clearAllChats);
   const router = useRouter();
 
   return (
