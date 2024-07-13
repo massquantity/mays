@@ -12,18 +12,15 @@ PERSIST_DIR = "./index_storage"
 
 
 def create_save_dirs():
-    data_dir, index_dir = Path(DATA_DIR), Path(PERSIST_DIR)
-    if not data_dir.exists() or not data_dir.is_dir():
-        data_dir.mkdir()
-
-    if not index_dir.exists() or not index_dir.is_dir():
-        index_dir.mkdir()
-        # shutil.rmtree(index_dir)
+    for d in (DATA_DIR, IMAGE_DIR, PERSIST_DIR):
+        d = Path(d)
+        if not (d.exists() and d.is_dir()):
+            d.mkdir()
 
 
-def is_index_empty():
-    index_dir = Path(PERSIST_DIR)
-    return len(list(index_dir.iterdir())) == 0
+def is_dir_empty(directory: str):
+    dir_iter = Path(directory).iterdir()
+    return len(list(dir_iter)) == 0
 
 
 def clear_index_dir():

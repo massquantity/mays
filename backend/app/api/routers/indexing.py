@@ -18,7 +18,7 @@ from ...utils import (
     clear_index_dir,
     create_save_dirs,
     global_model_settings,
-    is_index_empty,
+    is_dir_empty,
 )
 
 logger = logging.getLogger("uvicorn")
@@ -33,10 +33,13 @@ class UploadRequest(BaseModel):
 
 
 def save_file(request: UploadRequest):
-    # todo: plain-text, docx
     file_path = Path(DATA_DIR) / request.fileName
-    file_content = base64.b64decode(request.content)
-    file_path.write_bytes(file_content)
+    file_content = request.content
+    if request.isBase64:
+        file_content = base64.b64decode(request.content)
+        file_path.write_bytes(file_content)
+    else:
+        file_path.write_text(file_content, encoding="utf-8")
     logger.info(f"Finished writing data to {DATA_DIR}...")
     return file_path
 
@@ -57,7 +60,7 @@ def load_index():
 async def indexing(request: UploadRequest):
     file_path = save_file(request)
     documents = SimpleDirectoryReader(input_files=[file_path]).load_data()
-    if is_index_empty():
+    if is_dir_empty(PERSIST_DIR):
         index = VectorStoreIndex.from_documents(documents, show_progress=True)
     else:
         index = load_index()
