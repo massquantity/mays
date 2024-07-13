@@ -7,7 +7,7 @@ from llama_index.embeddings.mistralai import MistralAIEmbedding
 from llama_index.llms.mistralai import MistralAI
 
 DATA_DIR = "./data"
-
+IMAGE_DIR = "./images"
 PERSIST_DIR = "./index_storage"
 
 
