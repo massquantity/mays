@@ -5,10 +5,17 @@ import { toast } from 'react-hot-toast';
 
 import { buttonVariants } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  ALLOWED_DOCUMENT_EXTENSIONS,
+  BINARY_EXTENSIONS,
+  FILE_SIZE_LIMIT,
+  IMAGE_API,
+  IMAGE_EXTENSIONS,
+  INDEX_API,
+} from '@/lib/constant';
 import { cn, fetchWIthTimeout } from '@/lib/utils';
 
 const INPUT_ID = 'uploadFileInput';
-const FILE_SIZE_LIMIT = 1024 * 1024 * 100; // 100MB
 
 export default function FileUploader() {
   const [uploading, setUploading] = useState<boolean>(false);
@@ -27,36 +34,69 @@ export default function FileUploader() {
   const handleUpload = async (file: File) => {
     if (file.size > FILE_SIZE_LIMIT) {
       toast.error(`File size exceeded. Limit is ${FILE_SIZE_LIMIT / 1024 / 1024} MB.`);
-      throw new Error(`Failed to upload file`);
+      throw new Error(`File size exceeds the limit of ${FILE_SIZE_LIMIT / 1024 / 1024} MB.`);
     }
 
-    const base64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
+    const fileExtension = file.name.split('.').pop();
+    if (!fileExtension) {
+      toast.error(`Failed to get file extension from file ${file.name}.`);
+      throw new Error('Failed to get file extension.');
+    }
+    if (!ALLOWED_DOCUMENT_EXTENSIONS.includes(fileExtension)) {
+      toast.error(`Unsupported file extension ${fileExtension}.`);
+      throw new Error(`Unsupported file extension ${fileExtension}.`);
+    }
+
+    if (IMAGE_EXTENSIONS.includes(fileExtension)) {
+      await onUploadImage(file);
+    } else {
+      await onUploadContent(file, fileExtension);
+    }
+  };
+
+  const onUploadImage = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    await fetchWIthTimeout(IMAGE_API, {
+      method: 'POST',
+      body: formData,
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to upload file ${file.name}`);
+      }
+    });
+  };
+
+  const onUploadContent = async (file: File, fileExtension: string) => {
+    const isBinary = BINARY_EXTENSIONS.includes(fileExtension);
+    const reader = new FileReader();
+    const content = await new Promise<string>((resolve, reject) => {
+      if (isBinary) {
+        reader.readAsDataURL(file);
+      } else {
+        reader.readAsText(file);
+      }
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = (error) => reject(error);
     });
-    await onUploadContent(base64, file.name);
-  };
 
-  const onUploadContent = async (content: string, fileName: string) => {
-    // retrieve only the Base64 encoded string
-    // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
-    const base64 = content.split(',')[1];
-    const response = await fetchWIthTimeout('http://localhost:8000/api/indexing', {
+    await fetchWIthTimeout(INDEX_API, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        fileName,
-        content: base64,
-        isBase64: true,
+        fileName: file.name,
+        // retrieve only the Base64 encoded string
+        // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
+        content: isBinary ? content.split(',').pop() : content,
+        isBase64: isBinary,
       }),
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to upload file ${file.name}`);
+      }
     });
-    if (!response.ok) {
-      throw new Error(`Failed to upload file ${fileName}`);
-    }
   };
 
   const resetInput = () => {

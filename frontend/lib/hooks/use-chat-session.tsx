@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import { useCallback, useEffect, useReducer, useState } from 'react';
 
 import { useChatStore } from '@/lib/chat-store';
+import { CHAT_API } from '@/lib/constant';
 import { useLoadChat } from '@/lib/hooks/use-load-chats';
 
 export function useChatSession(chatId: string) {
@@ -34,7 +35,7 @@ export function useChatSession(chatId: string) {
 
   const { messages, setMessages, input, isLoading, handleSubmit, handleInputChange, reload, stop } =
     useChat({
-      api: 'http://localhost:8000/api/rag',
+      api: CHAT_API,
       initialMessages,
       id: chatId,
       onResponse(response) {

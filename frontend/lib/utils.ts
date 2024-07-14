@@ -14,7 +14,7 @@ export const nanoid = customAlphabet(
 interface FetchOptions {
   method: string;
   headers?: Record<string, string>;
-  body: string;
+  body: string | FormData;
   timeout?: number;
 }
 
