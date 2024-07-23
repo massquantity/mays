@@ -8,7 +8,7 @@ import { SidebarList } from '@/components/sidebar-list';
 
 export function ChatHistory() {
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full w-full flex-col">
       <div className="my-4 px-2">
         <Link
           href="/"
