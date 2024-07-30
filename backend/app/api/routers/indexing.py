@@ -14,10 +14,9 @@ from pydantic import BaseModel
 from ...utils import (
     DATA_DIR,
     PERSIST_DIR,
-    check_api_key,
     clear_index_dir,
     create_save_dirs,
-    global_model_settings,
+    embed_model_settings,
     is_dir_empty,
 )
 
@@ -30,13 +29,15 @@ class UploadRequest(BaseModel):
     fileName: str
     content: str
     isBase64: bool
+    modelName: str
+    apiKey: str
 
 
 def save_file(request: UploadRequest):
     file_path = Path(DATA_DIR) / request.fileName
     file_content = request.content
     if request.isBase64:
-        file_content = base64.b64decode(request.content)
+        file_content = base64.b64decode(file_content)
         file_path.write_bytes(file_content)
     else:
         file_path.write_text(file_content, encoding="utf-8")
@@ -49,15 +50,9 @@ def load_index():
     return load_index_from_storage(storage_context)
 
 
-@router.post(
-    "",
-    dependencies=[
-        Depends(check_api_key),
-        Depends(global_model_settings),
-        Depends(create_save_dirs),
-    ],
-)
+@router.post("", dependencies=[Depends(create_save_dirs)])
 async def indexing(request: UploadRequest):
+    embed_model_settings(request.modelName, request.apiKey)
     file_path = save_file(request)
     documents = SimpleDirectoryReader(input_files=[file_path]).load_data()
     if is_dir_empty(PERSIST_DIR):

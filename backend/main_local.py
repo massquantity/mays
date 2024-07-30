@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from llama_index.core import Settings, SimpleDirectoryReader, VectorStoreIndex
 from llama_index.core.base.base_query_engine import BaseQueryEngine
@@ -30,6 +31,13 @@ MULTI_MODAL_MODEL = "llava:7b"
 logger = logging.getLogger("uvicorn")
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def init_app_state():

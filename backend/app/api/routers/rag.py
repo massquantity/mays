@@ -1,17 +1,17 @@
 import logging
-import os
 from pathlib import Path
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 from llama_index.core.base.llms.types import ChatMessage, MessageRole
 from mistralai.async_client import MistralAsyncClient
 from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
+from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from .indexing import load_index
-from ...utils import PERSIST_DIR, check_api_key, global_model_settings
+from ...utils import PERSIST_DIR, global_model_settings
 
 logger = logging.getLogger("uvicorn")
 
@@ -25,11 +25,22 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[Message]
+    modelName: str
+    apiKey: str
+    temperature: float
+    maxTokens: int
+    topP: float
 
 
 async def rag_chat(request: Request, chatRequest: ChatRequest):
     logger.info(f"Loading index from {PERSIST_DIR}...")
-    global_model_settings()
+    global_model_settings(
+        model_name=chatRequest.modelName,
+        api_key=chatRequest.apiKey,
+        temperature=chatRequest.temperature,
+        max_tokens=chatRequest.maxTokens,
+        top_p=chatRequest.topP,
+    )
     index = load_index()
     logger.info(f"Finished loading index from {PERSIST_DIR}")
 
@@ -62,12 +73,35 @@ async def rag_chat(request: Request, chatRequest: ChatRequest):
 
 
 async def simple_chat(chatRequest: ChatRequest):
-    mistral_client = MistralAsyncClient(api_key=os.environ["MISTRAL_API_KEY"])
-    messages = [
-        MistralChatMessage(role=m.role.value, content=m.content)
-        for m in chatRequest.messages
-    ]
-    response = mistral_client.chat_stream(model="open-mistral-7b", messages=messages)
+    if "gpt" in chatRequest.modelName:
+        openai_client = AsyncOpenAI(api_key=chatRequest.apiKey)
+        messages = [{"role": m.role, "content": m.content} for m in chatRequest.messages]
+        response = openai_client.chat.completions.create(
+            model=chatRequest.modelname,
+            messages=messages,
+            temperature=chatRequest.temperature,
+            max_tokens=chatRequest.maxTokens,
+            top_p=chatRequest.topP,
+            stream=True,
+        )
+    elif chatRequest.modelName == "mistral":
+        mistral_client = MistralAsyncClient(api_key=chatRequest.apiKey)
+        messages = [
+            MistralChatMessage(role=m.role.value, content=m.content)
+            for m in chatRequest.messages
+        ]
+        response = mistral_client.chat_stream(
+            model="open-mistral-7b",
+            messages=messages,
+            temperature=chatRequest.temperature,
+            max_tokens=chatRequest.maxTokens,
+            top_p=chatRequest.topP,
+        )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported model using pure chat: `{chatRequest.modelName}`.",
+        )
 
     async def token_stream_generator():
         async for chunk in response:
@@ -76,7 +110,7 @@ async def simple_chat(chatRequest: ChatRequest):
     return StreamingResponse(token_stream_generator(), media_type="text/plain")
 
 
-@router.post("", dependencies=[Depends(check_api_key)])
+@router.post("")
 async def chat(request: Request, chatRequest: ChatRequest):
     if Path(PERSIST_DIR).exists():
         return await rag_chat(request, chatRequest)
