@@ -12,3 +12,7 @@ export const ALLOWED_DOCUMENT_EXTENSIONS = [
 ];
 
 export const FILE_SIZE_LIMIT = 1024 * 1024 * 100; // 100MB
+
+export const API_MODELS = ['gpt-3.5-turbo', 'gpt-4o-mini', 'gpt-4o', 'mistral'];
+
+export const ALL_MODELS = [...API_MODELS, 'ollama', 'huggingface'];
