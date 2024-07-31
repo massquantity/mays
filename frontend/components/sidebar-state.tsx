@@ -19,3 +19,22 @@ export function SidebarState({ className, children }: SidebarProps) {
     </div>
   );
 }
+
+export function ParamState({
+  className,
+  children,
+}: {
+  className: string;
+  children: React.ReactNode;
+}) {
+  const { isParamOpen } = useSidebar();
+
+  return (
+    <div
+      data-param={isParamOpen ? 'open' : 'close'}
+      className={cn(className, 'h-full dark:bg-zinc-950')}
+    >
+      {children}
+    </div>
+  );
+}

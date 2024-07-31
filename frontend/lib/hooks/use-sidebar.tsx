@@ -2,11 +2,11 @@
 
 import React, { useEffect } from 'react';
 
-const LOCAL_STORAGE_KEY = 'sidebar';
-
 interface SidebarContext {
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
+  isParamOpen: boolean;
+  toggleParams: () => void;
   isLoading: boolean;
 }
 
@@ -22,13 +22,18 @@ export function useSidebar() {
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setSidebarOpen] = React.useState(true);
+  const [isParamOpen, setParamsOpen] = React.useState(true);
   const [isLoading, setLoading] = React.useState(false);
 
   // load state from local storage after browser refresh, execute once
   useEffect(() => {
-    const value = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const value = localStorage.getItem('sidebar');
     if (value) {
       setSidebarOpen(JSON.parse(value));
+    }
+    const param = localStorage.getItem('params');
+    if (param) {
+      setParamsOpen(JSON.parse(param));
     }
     setLoading(false);
   }, []);
@@ -36,7 +41,15 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const toggleSidebar = () => {
     setSidebarOpen((state) => {
       const newState = !state;
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
+      localStorage.setItem('sidebar', JSON.stringify(newState));
+      return newState;
+    });
+  };
+
+  const toggleParams = () => {
+    setParamsOpen((state) => {
+      const newState = !state;
+      localStorage.setItem('params', JSON.stringify(newState));
       return newState;
     });
   };
@@ -46,7 +59,9 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SidebarContext.Provider value={{ isSidebarOpen, toggleSidebar, isLoading }}>
+    <SidebarContext.Provider
+      value={{ isSidebarOpen, toggleSidebar, isParamOpen, toggleParams, isLoading }}
+    >
       {children}
     </SidebarContext.Provider>
   );

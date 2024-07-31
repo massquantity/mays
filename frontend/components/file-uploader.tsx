@@ -7,18 +7,21 @@ import { buttonVariants } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   ALLOWED_DOCUMENT_EXTENSIONS,
+  API_MODELS,
   BINARY_EXTENSIONS,
   FILE_SIZE_LIMIT,
   IMAGE_API,
   IMAGE_EXTENSIONS,
   INDEX_API,
 } from '@/lib/constant';
+import { useParamStore } from '@/lib/param-store';
 import { cn, fetchWIthTimeout } from '@/lib/utils';
 
 const INPUT_ID = 'uploadFileInput';
 
 export default function FileUploader() {
   const [uploading, setUploading] = useState<boolean>(false);
+  const { modelName, apiKey } = useParamStore((state) => state);
 
   const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,16 +36,19 @@ export default function FileUploader() {
 
   const handleUpload = async (file: File) => {
     if (file.size > FILE_SIZE_LIMIT) {
+      setUploading(false);
       toast.error(`File size exceeded. Limit is ${FILE_SIZE_LIMIT / 1024 / 1024} MB.`);
       throw new Error(`File size exceeds the limit of ${FILE_SIZE_LIMIT / 1024 / 1024} MB.`);
     }
 
     const fileExtension = file.name.split('.').pop();
     if (!fileExtension) {
+      setUploading(false);
       toast.error(`Failed to get file extension from file ${file.name}.`);
       throw new Error('Failed to get file extension.');
     }
     if (!ALLOWED_DOCUMENT_EXTENSIONS.includes(fileExtension)) {
+      setUploading(false);
       toast.error(`Unsupported file extension ${fileExtension}.`);
       throw new Error(`Unsupported file extension ${fileExtension}.`);
     }
@@ -68,6 +74,7 @@ export default function FileUploader() {
   };
 
   const onUploadContent = async (file: File, fileExtension: string) => {
+    checkModel();
     const isBinary = BINARY_EXTENSIONS.includes(fileExtension);
     const reader = new FileReader();
     const content = await new Promise<string>((resolve, reject) => {
@@ -91,12 +98,29 @@ export default function FileUploader() {
         // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
         content: isBinary ? content.split(',').pop() : content,
         isBase64: isBinary,
+        modelName,
+        apiKey,
       }),
     }).then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to upload file ${file.name}`);
       }
     });
+  };
+
+  const checkModel = () => {
+    if (!modelName) {
+      setUploading(false);
+      toast.error(`No model is selected. Please select a model on the right.`);
+      throw new Error(`No model is selected.`);
+    }
+    if (API_MODELS.includes(modelName) && !apiKey) {
+      setUploading(false);
+      toast.error(`No API key is provided. Please provide an API key to use ${modelName}.`, {
+        duration: 5000,
+      });
+      throw new Error(`No API key is provided.`);
+    }
   };
 
   const resetInput = () => {

@@ -31,7 +31,7 @@ export default function ChatInput(
   return (
     <form
       onSubmit={props.handleSubmit}
-      className="fixed inset-x-0 bottom-8 w-full duration-300 ease-in-out animate-in peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px]"
+      className="fixed inset-x-0 bottom-8 w-full duration-300 ease-in-out animate-in peer-[[data-param=open]]:group-[]:lg:pr-[250px] peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-param=open]]:group-[]:xl:pr-[300px] peer-[[data-state=open]]:group-[]:xl:pl-[300px]"
     >
       <div className="flex justify-center py-2">
         <ChatActions
