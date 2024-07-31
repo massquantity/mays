@@ -9,6 +9,7 @@ import { useCallback, useEffect, useReducer, useState } from 'react';
 import { useChatStore } from '@/lib/chat-store';
 import { CHAT_API } from '@/lib/constant';
 import { useLoadChat } from '@/lib/hooks/use-load-chats';
+import { useParamStore } from '@/lib/param-store';
 
 export function useChatSession(chatId: string) {
   const path = usePathname();
@@ -18,6 +19,7 @@ export function useChatSession(chatId: string) {
   const [initSidebar, setInitSidebar] = useState<boolean>(true);
   const { setChatList } = useLoadChat();
   const { saveChat, loadChat, loadAllChats } = useChatStore((state) => state);
+  const getAllParams = useParamStore((state) => state.getAll);
 
   const loadChatHistory = useCallback(() => {
     if (isNewChat) {
@@ -38,6 +40,7 @@ export function useChatSession(chatId: string) {
       api: CHAT_API,
       initialMessages,
       id: chatId,
+      body: getAllParams(),
       onResponse(response) {
         if (response.status !== 200) {
           throw new Error(response.statusText);

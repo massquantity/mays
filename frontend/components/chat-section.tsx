@@ -2,12 +2,15 @@
 
 import { Message } from 'ai';
 import React from 'react';
+import { toast } from 'react-hot-toast';
 
 import ChatInput from '@/components/chat-input';
 import ChatMessages from '@/components/chat-messages';
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor';
 import { useChatStore } from '@/lib/chat-store';
+import { API_MODELS } from '@/lib/constant';
 import { useChatSession } from '@/lib/hooks/use-chat-session';
+import { useParamStore } from '@/lib/param-store';
 
 interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[];
@@ -16,13 +19,38 @@ interface ChatProps extends React.ComponentProps<'div'> {
 
 export default function ChatSection({ chatId }: ChatProps) {
   const saveChat = useChatStore((state) => state.saveChat);
-  const { messages, setMessages, input, isLoading, handleSubmit, handleInputChange, reload, stop } =
-    useChatSession(chatId);
+  const { modelName, apiKey } = useParamStore((state) => state);
+
+  const {
+    messages,
+    setMessages,
+    input,
+    isLoading,
+    handleSubmit: onSubmit,
+    handleInputChange,
+    reload,
+    stop,
+  } = useChatSession(chatId);
 
   const handleDelete = (messageId: string) => {
     const newMessages = messages.filter((m) => m.id !== messageId);
     setMessages(newMessages);
     saveChat(chatId, newMessages);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!modelName) {
+      toast.error(`No model is selected. Please select a model on the right.`);
+      throw new Error(`No model is selected.`);
+    }
+    if (API_MODELS.includes(modelName) && !apiKey) {
+      toast.error(`No API key is provided. Please provide an API key to use ${modelName}.`, {
+        duration: 5000,
+      });
+      throw new Error(`No API key is provided.`);
+    }
+    onSubmit(e);
   };
 
   return (

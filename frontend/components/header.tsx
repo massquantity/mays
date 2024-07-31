@@ -1,4 +1,4 @@
-import { SidebarToggle } from '@/components/sidebar-toggle';
+import { ParamToggle, SidebarToggle } from '@/components/sidebar-toggle';
 
 export function Header() {
   return (
@@ -8,6 +8,9 @@ export function Header() {
       </div>
       <div className="flex-auto items-center">
         <h1 className="text-lg font-bold md:text-3xl">Chat with Files</h1>
+      </div>
+      <div className="flex-none">
+        <ParamToggle />
       </div>
     </header>
   );
