@@ -101,11 +101,18 @@ export default function FileUploader() {
         modelName,
         apiKey,
       }),
-    }).then((response) => {
-      if (!response.ok) {
-        throw new Error(`Failed to upload file ${file.name}`);
-      }
-    });
+      timeout: 60000,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          setUploading(false);
+          throw new Error(`Failed to upload file ${file.name}`);
+        }
+      })
+      .catch((error) => {
+        setUploading(false);
+        throw error;
+      });
   };
 
   const checkModel = () => {
