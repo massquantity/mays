@@ -21,7 +21,7 @@ export default function ModelSelector() {
     if (selectedModel) {
       saveModelName(selectedModel);
     }
-  }, [selectedModel]);
+  }, [selectedModel, saveModelName]);
 
   return (
     <div className="flex flex-col space-y-2">

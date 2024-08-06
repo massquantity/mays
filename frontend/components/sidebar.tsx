@@ -2,7 +2,9 @@ import { ParamState, SidebarState } from '@/components/sidebar-state';
 import { ChatHistory } from '@/components/chat-history';
 import ModelSelector from '@/components/model-selector';
 import ApiKeyInput from '@/components/api-key-input';
+import MaxTokensSelector from '@/components/max-tokens-selector';
 import TemperatureSelector from '@/components/temperature-selector';
+import TopPSelector from '@/components/top-p-selector';
 import { cn } from '@/lib/utils';
 
 export async function Sidebar() {
@@ -25,6 +27,8 @@ export function ParamSidebar({ className }: { className?: string }) {
         <ModelSelector />
         <ApiKeyInput />
         <TemperatureSelector />
+        <TopPSelector />
+        <MaxTokensSelector />
       </div>
     </ParamState>
   );
