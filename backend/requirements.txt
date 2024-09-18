@@ -1,8 +1,13 @@
 docx2txt == 0.8
 fastapi == 0.111.0
-llama-index == 0.10.43
+llama-index == 0.10.58
 llama-index-embeddings-mistralai == 0.1.4
-llama-index-llms-mistralai  == 0.1.15
+llama-index-embeddings-huggingface == 0.2.2
+llama-index-embeddings-ollama == 0.1.2
+llama-index-llms-huggingface == 0.2.5
+llama-index-llms-mistralai  == 0.1.19
+llama-index-llms-ollama == 0.2.2
 pydantic == 2.7.3
+pymupdf == 1.24.7
 pypdf
 uvicorn
