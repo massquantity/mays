@@ -1,8 +1,10 @@
 import base64
 import logging
+import subprocess
 from pathlib import Path
 
-from fastapi import APIRouter, Depends
+import pymupdf
+from fastapi import APIRouter, Depends, HTTPException
 from llama_index.core import (
     SimpleDirectoryReader,
     StorageContext,
@@ -10,6 +12,7 @@ from llama_index.core import (
     load_index_from_storage,
 )
 from pydantic import BaseModel
+from starlette import status
 
 from ...utils import (
     DATA_DIR,
@@ -34,15 +37,60 @@ class UploadRequest(BaseModel):
 
 
 def save_file(request: UploadRequest):
-    file_path = Path(DATA_DIR) / request.fileName
+    file_name = request.fileName
+    file_path = Path(DATA_DIR) / file_name
     file_content = request.content
     if request.isBase64:
         file_content = base64.b64decode(file_content)
-        file_path.write_bytes(file_content)
+        if file_name.endswith("pdf") and is_scanned_pdf(file_content):
+            ocr_pdf(file_content, file_path)
+        else:
+            file_path.write_bytes(file_content)
     else:
         file_path.write_text(file_content, encoding="utf-8")
     logger.info(f"Finished writing data to {DATA_DIR}...")
     return file_path
+
+
+def is_scanned_pdf(content: bytes):
+    document = pymupdf.open("pdf", content)
+    for page in document:
+        text = page.get_text()
+        if text.strip():
+            return False
+    return True
+
+
+def ocr_pdf(content: bytes, file_path: Path):
+    _check_tesseract_installed()
+    src_doc = pymupdf.open("pdf", content)
+    dst_doc = pymupdf.open()
+    for page in src_doc:
+        pix = page.get_pixmap(dpi=150)
+        ocr_bytes = pix.pdfocr_tobytes(
+            language="eng+chi_sim", tessdata="/usr/share/tesseract-ocr/4.00/tessdata"
+        )
+        img_pdf = pymupdf.open("pdf", ocr_bytes)
+        dst_doc.insert_pdf(img_pdf)
+        img_pdf.close()
+    dst_doc.save(file_path)
+
+
+def _check_tesseract_installed():
+    try:
+        res = subprocess.run(
+            ["tesseract", "--version"], stdout=subprocess.PIPE, text=True
+        )
+        if res.returncode != 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="`tesseract` is not installed.",
+            )
+    except FileNotFoundError as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="`tesseract` is not installed.",
+        ) from err
 
 
 def load_index():
