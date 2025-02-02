@@ -3,8 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from mistralai.async_client import MistralAsyncClient
-from mistralai.models.chat_completion import ChatMessage
+from mistralai import Mistral
 from pydantic import BaseModel
 
 from ...utils import check_api_key
@@ -23,12 +22,15 @@ class ChatRequest(BaseModel):
 
 @router.post("", dependencies=[Depends(check_api_key)])
 async def chat(request: ChatRequest):
-    mistral_client = MistralAsyncClient(api_key=os.environ["MISTRAL_API_KEY"])
-    messages = [ChatMessage(role=m.role, content=m.content) for m in request.messages]
-    response = mistral_client.chat_stream(model="open-mistral-7b", messages=messages)
+    mistral_client = Mistral(api_key=os.environ["MISTRAL_API_KEY"])
+    messages = [{"role": m.role, "content": m.content} for m in request.messages]
+    response = await mistral_client.chat.stream_async(
+        model="mistral-small-latest", messages=messages
+    )
 
     async def token_stream_generator():
         async for chunk in response:
-            yield chunk.choices[0].delta.content
+            if chunk.data.choices[0].delta.content is not None:
+                yield chunk.data.choices[0].delta.content
 
     return StreamingResponse(token_stream_generator(), media_type="text/plain")
