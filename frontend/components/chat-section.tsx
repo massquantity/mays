@@ -8,7 +8,7 @@ import ChatInput from '@/components/chat-input';
 import ChatMessages from '@/components/chat-messages';
 import { ChatScrollAnchor } from '@/components/chat-scroll-anchor';
 import { useChatStore } from '@/lib/chat-store';
-import { API_MODELS } from '@/lib/constant';
+import { API_LLM_MODELS } from '@/lib/constant';
 import { useChatSession } from '@/lib/hooks/use-chat-session';
 import { useParamStore } from '@/lib/param-store';
 
@@ -19,7 +19,7 @@ interface ChatProps extends React.ComponentProps<'div'> {
 
 export default function ChatSection({ chatId }: ChatProps) {
   const saveChat = useChatStore((state) => state.saveChat);
-  const { modelName, apiKey } = useParamStore((state) => state);
+  const { llm, llmApiKey } = useParamStore((state) => state);
 
   const {
     messages,
@@ -40,15 +40,15 @@ export default function ChatSection({ chatId }: ChatProps) {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!modelName) {
-      toast.error(`No model is selected. Please select a model on the right.`);
-      throw new Error(`No model is selected.`);
+    if (!llm) {
+      toast.error(`No LLM model is selected. Please select a model on the right.`);
+      throw new Error(`No LLM model is selected.`);
     }
-    if (API_MODELS.includes(modelName) && !apiKey) {
-      toast.error(`No API key is provided. Please provide an API key to use ${modelName}.`, {
+    if (API_LLM_MODELS.includes(llm) && !llmApiKey) {
+      toast.error(`No LLM API key is provided. Please provide an API key to use ${llm}.`, {
         duration: 5000,
       });
-      throw new Error(`No API key is provided.`);
+      throw new Error(`No LLM API key is provided.`);
     }
     onSubmit(e);
   };

@@ -9,29 +9,45 @@ import { Label } from '@/components/ui/label';
 import { useParamStore } from '@/lib/param-store';
 
 export default function ApiKeyInput() {
-  const [apiKey, setApiKey] = React.useState('');
-  const { saveApiKey, removeApiKey, apiKey: savedKey } = useParamStore((state) => state);
+  const [llmApiKey, setLlmApiKey] = React.useState('');
+  const [embedApiKey, setEmbedApiKey] = React.useState('');
+  const {
+    llmApiKey: savedLlmKey,
+    embedApiKey: savedEmbedKey,
+    saveLlmApiKey,
+    saveEmbedApiKey,
+    removeApiKey,
+  } = useParamStore((state) => state);
+
+  const checkApiKeyExist = (llmKey?: string, embedKey?: string) => {
+    if (!llmKey) {
+      toast.error('No LLM api key found!');
+      throw new Error('No LLM api key found!');
+    }
+    if (!embedKey) {
+      toast.error('No embed api key found!');
+      throw new Error('No embed api key found!');
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (apiKey) {
-      saveApiKey(apiKey);
-      toast.success('Set api key success!');
-    }
+    checkApiKeyExist(llmApiKey, embedApiKey);
+    saveLlmApiKey(llmApiKey);
+    saveEmbedApiKey(embedApiKey);
+    toast.success('Set LLM and embed api key success!');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setApiKey(e.target.value);
+    setLlmApiKey(e.target.value);
   };
 
   const handleDeleteKey = () => {
-    if (savedKey !== '') {
-      removeApiKey();
-      setApiKey('');
-      toast.success('Remove api key success!');
-    } else {
-      toast.error('No api key found!');
-    }
+    checkApiKeyExist(savedLlmKey, savedEmbedKey);
+    removeApiKey();
+    setLlmApiKey('');
+    setEmbedApiKey('');
+    toast.success('Remove LLM and embed api key success!');
   };
 
   return (
@@ -41,12 +57,21 @@ export default function ApiKeyInput() {
       </Label>
       <Input
         type="password"
-        name="api-key"
-        id="api-key"
-        value={apiKey}
-        placeholder="Enter your api key..."
+        name="llm-api-key"
+        id="llm-api-key"
+        value={llmApiKey}
+        placeholder="Enter your LLM api key..."
         className="rounded-md border-gray-300 dark:border-gray-700 xl:max-w-[400px]"
         onChange={handleInputChange}
+      />
+      <Input
+        type="password"
+        name="embed-api-key"
+        id="embed-api-key"
+        value={embedApiKey}
+        placeholder="Enter your embed api key..."
+        className="rounded-md border-gray-300 dark:border-gray-700 xl:max-w-[400px]"
+        onChange={(e) => setEmbedApiKey(e.target.value)}
       />
       <div className="flex items-center justify-around">
         <Button type="submit" variant="default" size="sm">
@@ -54,7 +79,7 @@ export default function ApiKeyInput() {
         </Button>
         <Button
           onClick={handleDeleteKey}
-          disabled={!apiKey}
+          disabled={!llmApiKey || !embedApiKey}
           variant="destructive"
           size="sm"
           type="button"

@@ -19,7 +19,7 @@ export function useChatSession(chatId: string) {
   const [initSidebar, setInitSidebar] = useState<boolean>(true);
   const { setChatList } = useLoadChat();
   const { saveChat, loadChat, loadAllChats } = useChatStore((state) => state);
-  const getAllParams = useParamStore((state) => state.getAll);
+  const getChatParams = useParamStore((state) => state.getChatParams);
 
   const loadChatHistory = useCallback(() => {
     if (isNewChat) {
@@ -40,7 +40,7 @@ export function useChatSession(chatId: string) {
       api: CHAT_API,
       initialMessages,
       id: chatId,
-      body: getAllParams(),
+      body: getChatParams(),
       onResponse(response) {
         if (response.status !== 200) {
           throw new Error(response.statusText);
