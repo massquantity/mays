@@ -21,6 +21,8 @@ from ...utils import (
     create_save_dirs,
     embed_model_settings,
     is_dir_empty,
+    load_embed_config,
+    save_embed_config,
 )
 
 logger = logging.getLogger("uvicorn")
@@ -32,7 +34,7 @@ class UploadRequest(BaseModel):
     fileName: str
     content: str
     isBase64: bool
-    modelName: str
+    embedModel: str
     apiKey: str
 
 
@@ -93,9 +95,18 @@ def _check_tesseract_installed():
         ) from err
 
 
-def load_index():
+def load_index(new_embed_model: str | None = None):
+    # ensure indexing construction, index updating and rag using the same embedding setting
+    embed_config = load_embed_config()
+    embed_model, api_key = embed_config["embed_model"], embed_config["api_key"]
+    if new_embed_model and new_embed_model != embed_model:
+        logger.warning(
+            f"The requested embed_model {new_embed_model} does not match with "
+            f"saved embed_model {embed_model}, use {embed_model}."
+        )
+    embed_model_settings(embed_model, api_key)
     storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-    return load_index_from_storage(storage_context)
+    return load_index_from_storage(storage_context)  # index_id
 
 
 @router.post("", dependencies=[Depends(create_save_dirs)])
