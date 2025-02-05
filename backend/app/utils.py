@@ -9,6 +9,8 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.embeddings.mistralai import MistralAIEmbedding
 from llama_index.embeddings.ollama import OllamaEmbedding
 from llama_index.embeddings.openai import OpenAIEmbedding, OpenAIEmbeddingModelType
+from llama_index.embeddings.voyageai import VoyageEmbedding
+from llama_index.llms.deepseek import DeepSeek
 from llama_index.llms.huggingface import HuggingFaceLLM
 from llama_index.llms.mistralai import MistralAI
 from llama_index.llms.ollama import Ollama
@@ -73,24 +75,30 @@ def save_embed_config(embed_model: str, api_key: str):
 
 
 def embed_model_settings(model_name: str, api_key: str):
-    if "gpt" in model_name:
+    if model_name.startswith("gpt"):
         Settings.embed_model = OpenAIEmbedding(
             model=OpenAIEmbeddingModelType.TEXT_EMBED_3_SMALL,
             dimensions=256,
             api_key=api_key,
         )
-    elif "mistral" in model_name:
+    elif model_name.startswith("mistral"):
         Settings.embed_model = MistralAIEmbedding(
             model_name="mistral-embed", api_key=api_key
         )
-    elif "ollama" in model_name:
+    elif model_name.startswith("voyage"):
+        Settings.embed_model = VoyageEmbedding(
+            model_name="voyage-3", voyage_api_key=api_key
+        )
+    elif model_name.startswith("ollama"):
         Settings.embed_model = OllamaEmbedding(
             model_name="mxbai-embed-large", ollama_additional_kwargs={"keep_alive": -1}
         )
-    elif "huggingface" in model_name:
+    elif model_name.startswith("huggingface"):
         model_folder = Path.home() / "Workspace/models/huggingface"
         Settings.embed_model = HuggingFaceEmbedding(
-            model_name=f"{model_folder}/bge-large-zh-v1.5", cache_folder=model_folder
+            model_name=f"{model_folder}/bge-large-zh-v1.5",
+            cache_folder=model_folder,
+            query_instruction="为这个句子生成表示以用于检索相关文章：",
         )
     else:
         raise HTTPException(
@@ -102,7 +110,7 @@ def embed_model_settings(model_name: str, api_key: str):
 def global_model_settings(
     model_name: str, api_key: str, temperature: float, max_tokens: int, top_p: float
 ):
-    if "gpt" in model_name:
+    if model_name.startswith("gpt"):
         Settings.llm = OpenAI(
             model=model_name,
             api_key=api_key,
@@ -110,17 +118,25 @@ def global_model_settings(
             max_tokens=max_tokens,
             additional_kwargs={"top_p": top_p},
         )
-    elif "mistral" in model_name:
+    elif model_name.startswith("mistral"):
         Settings.llm = MistralAI(
-            model="mistral-tiny",
+            model="mistral-small-latest",
             api_key=api_key,
             temperature=temperature,
             max_tokens=max_tokens,
             additional_kwargs={"top_p": top_p},
         )
-    elif "ollama" in model_name:
+    elif model_name.startswith("deepseek"):
+        Settings.llm = DeepSeek(
+            model="deepseek-chat",
+            api_key=api_key,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            additional_kwargs={"top_p": top_p},
+        )
+    elif model_name.startswith("ollama"):
         Settings.llm = Ollama(
-            model="qwen2:7b",  # phi3, yi:6b-chat-v1.5-q4_0
+            model="qwen2.5:7b",
             request_timeout=360.0,
             temperature=temperature,
             additional_kwargs={
@@ -130,7 +146,7 @@ def global_model_settings(
                 "top_p": top_p,
             },
         )
-    elif "huggingface" in model_name:
+    elif model_name.startswith("huggingface"):
         model_folder = Path.home() / "Workspace/models/huggingface"
         Settings.llm = HuggingFaceLLM(
             model_name=f"{model_folder}/Qwen2-0.5B-Instruct",

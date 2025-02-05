@@ -4,9 +4,8 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
-from llama_index.core.base.llms.types import ChatMessage, MessageRole
-from mistralai.async_client import MistralAsyncClient
-from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
+from llama_index.core.base.llms.types import ChatMessage
+from mistralai import Mistral
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
@@ -19,13 +18,13 @@ router = APIRouter()
 
 
 class Message(BaseModel):
-    role: MessageRole
+    role: str
     content: str
 
 
 class ChatRequest(BaseModel):
     messages: List[Message]
-    modelName: str
+    llm: str
     apiKey: str
     temperature: float
     maxTokens: int
@@ -35,7 +34,7 @@ class ChatRequest(BaseModel):
 async def rag_chat(request: Request, chatRequest: ChatRequest):
     logger.info(f"Loading index from {PERSIST_DIR}...")
     global_model_settings(
-        model_name=chatRequest.modelName,
+        model_name=chatRequest.llm,
         api_key=chatRequest.apiKey,
         temperature=chatRequest.temperature,
         max_tokens=chatRequest.maxTokens,
@@ -50,7 +49,7 @@ async def rag_chat(request: Request, chatRequest: ChatRequest):
             detail="No message provided",
         )
     last_message = chatRequest.messages.pop()
-    if last_message.role != MessageRole.USER:
+    if last_message.role != "user":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Last message must be from user",
@@ -73,25 +72,27 @@ async def rag_chat(request: Request, chatRequest: ChatRequest):
 
 
 async def simple_chat(chatRequest: ChatRequest):
-    if "gpt" in chatRequest.modelName:
-        openai_client = AsyncOpenAI(api_key=chatRequest.apiKey)
-        messages = [{"role": m.role, "content": m.content} for m in chatRequest.messages]
-        response = openai_client.chat.completions.create(
-            model=chatRequest.modelname,
+    model_name = chatRequest.llm
+    client_args = {"api_key": chatRequest.apiKey}
+    messages = [{"role": m.role, "content": m.content} for m in chatRequest.messages]
+    if model_name.startswith(("gpt", "deepseek")):
+        if model_name.startswith("deepseek"):
+            client_args["base_url"] = "https://api.deepseek.com"
+            model_name = "deepseek-chat"
+        openai_client = AsyncOpenAI(**client_args)
+        response = await openai_client.chat.completions.create(
+            model=model_name,
             messages=messages,
             temperature=chatRequest.temperature,
             max_tokens=chatRequest.maxTokens,
             top_p=chatRequest.topP,
             stream=True,
         )
-    elif chatRequest.modelName == "mistral":
-        mistral_client = MistralAsyncClient(api_key=chatRequest.apiKey)
-        messages = [
-            MistralChatMessage(role=m.role.value, content=m.content)
-            for m in chatRequest.messages
-        ]
-        response = mistral_client.chat_stream(
-            model="open-mistral-7b",
+    elif model_name.startswith("mistral"):
+        model_name = "mistral-small-latest"
+        mistral_client = Mistral(**client_args)
+        response = await mistral_client.chat.stream_async(
+            model=model_name,
             messages=messages,
             temperature=chatRequest.temperature,
             max_tokens=chatRequest.maxTokens,
@@ -100,11 +101,14 @@ async def simple_chat(chatRequest: ChatRequest):
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported model using pure chat: `{chatRequest.modelName}`.",
+            detail=f"Unsupported model using pure chat: `{model_name}`.",
         )
 
     async def token_stream_generator():
         async for chunk in response:
+            # TODO: litellm unify
+            if model_name.startswith("mistral"):
+                chunk = chunk.data
             yield chunk.choices[0].delta.content
 
     return StreamingResponse(token_stream_generator(), media_type="text/plain")

@@ -24,7 +24,7 @@ from app.utils import (
     is_dir_empty,
 )
 
-LLM_MODEL = "qwen2:7b"
+LLM_MODEL = "qwen2.5:7b"
 EMBED_MODEL = "mxbai-embed-large"
 MULTI_MODAL_MODEL = "llava:7b"
 
