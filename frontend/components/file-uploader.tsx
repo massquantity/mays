@@ -7,7 +7,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   ALLOWED_DOCUMENT_EXTENSIONS,
-  API_MODELS,
+  API_EMBED_MODELS,
   BINARY_EXTENSIONS,
   FILE_SIZE_LIMIT,
   IMAGE_API,
@@ -21,7 +21,7 @@ const INPUT_ID = 'uploadFileInput';
 
 export default function FileUploader() {
   const [uploading, setUploading] = useState<boolean>(false);
-  const { modelName, apiKey } = useParamStore((state) => state);
+  const { embedModel, embedApiKey } = useParamStore((state) => state);
 
   const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,8 +98,8 @@ export default function FileUploader() {
         // https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
         content: isBinary ? content.split(',').pop() : content,
         isBase64: isBinary,
-        modelName,
-        apiKey,
+        embedModel,
+        apiKey: embedApiKey,
       }),
       timeout: 60000,
     })
@@ -116,17 +116,17 @@ export default function FileUploader() {
   };
 
   const checkModel = () => {
-    if (!modelName) {
+    if (!embedModel) {
       setUploading(false);
-      toast.error(`No model is selected. Please select a model on the right.`);
-      throw new Error(`No model is selected.`);
+      toast.error(`No embed model is selected. Please select a model on the right.`);
+      throw new Error(`No embed model is selected.`);
     }
-    if (API_MODELS.includes(modelName) && !apiKey) {
+    if (API_EMBED_MODELS.includes(embedModel) && !embedApiKey) {
       setUploading(false);
-      toast.error(`No API key is provided. Please provide an API key to use ${modelName}.`, {
+      toast.error(`No embed API key is provided. Please provide an API key to use ${embedModel}.`, {
         duration: 5000,
       });
-      throw new Error(`No API key is provided.`);
+      throw new Error(`No embed API key is provided.`);
     }
   };
 

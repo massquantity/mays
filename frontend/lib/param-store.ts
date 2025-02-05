@@ -1,34 +1,57 @@
 import { create } from 'zustand';
 
 interface ParamState {
-  modelName: string;
-  apiKey: string;
+  llm: string;
+  llmApiKey: string;
+  embedModel: string;
+  embedApiKey: string;
   temperature: number;
   maxTokens: number;
   topP: number;
 }
 
 interface ParamAction {
-  saveModelName: (modelName: string) => void;
-  saveApiKey: (apiKey: string) => void;
+  saveLlm: (llm: string) => void;
+  saveLlmApiKey: (llmApiKey: string) => void;
+  saveEmbedModel: (embedModel: string) => void;
+  saveEmbedApiKey: (embedApiKey: string) => void;
   removeApiKey: () => void;
   saveTemperature: (temperature: number) => void;
   saveMaxTokens: (maxTokens: number) => void;
   saveTopP: (topP: number) => void;
-  getAll: () => ParamState;
+  getChatParams: () => {
+    llm: string;
+    apiKey: string;
+    temperature: number;
+    maxTokens: number;
+    topP: number;
+  };
 }
 
 export const useParamStore = create<ParamState & ParamAction>()((set, get) => ({
-  modelName: '',
-  apiKey: '',
+  llm: '',
+  llmApiKey: '',
+  embedModel: '',
+  embedApiKey: '',
   temperature: 1.0,
   maxTokens: 2048,
   topP: 1.0,
-  saveModelName: (modelName: string) => set({ modelName }),
-  saveApiKey: (apiKey: string) => set({ apiKey }),
-  removeApiKey: () => set({ apiKey: '' }),
+  saveLlm: (llm: string) => set({ llm }),
+  saveLlmApiKey: (llmApiKey: string) => set({ llmApiKey }),
+  saveEmbedModel: (embedModel: string) => set({ embedModel }),
+  saveEmbedApiKey: (embedApiKey: string) => set({ embedApiKey }),
+  removeApiKey: () => set({ llmApiKey: '', embedApiKey: '' }),
   saveTemperature: (temperature: number) => set({ temperature }),
   saveMaxTokens: (maxTokens: number) => set({ maxTokens }),
   saveTopP: (topP: number) => set({ topP }),
-  getAll: () => get(),
+  getChatParams: () => {
+    const params = get();
+    return {
+      llm: params.llm,
+      apiKey: params.llmApiKey,
+      temperature: params.temperature,
+      maxTokens: params.maxTokens,
+      topP: params.topP,
+    };
+  },
 }));
