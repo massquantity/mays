@@ -1,24 +1,35 @@
 # mays
 
-This project builds a RAG chatbot based on LlamaIndex. It supports file uploading and chatting.
+This project is a Retrieval-Augmented Generation (RAG) application powered by LlamaIndex, 
+enabling document upload and interactive chat functionality.
 
-[Mistral 7B](https://docs.mistral.ai/getting-started/models/) is used as the LLM model, and one can get api key from https://console.mistral.ai/api-keys.
+Supported LLMs: `gpt-3.5-turbo`, `gpt-4o`, `deepseek`, `mistral`. 
+We use models from [Voyage AI](https://www.voyageai.com/)  for [embedding](https://docs.voyageai.com/docs/embeddings) and [reranking](https://docs.voyageai.com/docs/reranker).
 
-## Running
+Make sure you have configured the API keys for both the LLM and embedding services in the application page.
 
-First, install the dependencies and run the backend. Requires Python >= 3.9.
+### Backend Setup
+
+The python backend uses [uv](https://github.com/astral-sh/uv) for dependency and environment management, and requires Python 3.12 or higher. 
+The `uv sync --python 3.12` command will:
+1. Download and install Python 3.12 if it is not available on your system.
+2. Create a virtual environment (if one doesn't already exist).
+3. Install all [dependencies](https://github.com/massquantity/mays/blob/main/backend/pyproject.toml#L6) into the environment.
+
 ```bash
 $ cd backend
-$ pip install -r requirements.txt
-$ export MISTRAL_API_KEY=...  # set the mistral api key environment variable
-$ python main.py
+$ uv sync --python 3.12
+$ uv run main.py  # Starts the backend server
 ```
 
-Second, run the frontend. [pnpm](https://pnpm.io/) is used to manage dependencies.
+### Frontend Setup
+
+The [Next.js](https://nextjs.org/) frontend uses [pnpm](https://pnpm.io/) for package management:
+
 ```bash
 $ cd frontend
-$ pnpm install
-$ pnpm run dev
+$ pnpm install  # Install dependencies
+$ pnpm run dev  # Starts the frontend server
 ```
 
-Open http://localhost:3000 with your browser to see the result.
+Once both servers are running, 🌐 Open http://localhost:3000 in your browser to access the application.
