@@ -12,6 +12,13 @@ from pydantic import BaseModel
 from .indexing import load_index
 from ...utils import PERSIST_DIR, global_model_settings
 
+REACT_CONTEXT_PROMPT = (
+    "If the question can be answered directly from your internal knowledge or indexed "
+    "data, DO NOT use any tools. "
+    "Only use tools when the question requires real-time, private, or domain-specific "
+    "data that you do not already know."
+)
+
 logger = logging.getLogger("uvicorn")
 
 router = APIRouter()
@@ -57,7 +64,15 @@ async def rag_chat(request: Request, chatRequest: ChatRequest):
     messages = [
         ChatMessage(role=m.role, content=m.content) for m in chatRequest.messages
     ]
-    chat_engine = index.as_chat_engine(chat_mode="condense_plus_context")
+    # chat_engine = index.as_chat_engine(chat_mode="condense_plus_context")
+    chat_engine = index.as_chat_engine(
+        chat_mode="react",
+        max_iterations=7,
+        verbose=True,
+        response_mode="tree_summarize",
+        context=REACT_CONTEXT_PROMPT,
+    )
+    logger.info(f"Chat engine type: {chat_engine.__class__.__name__}")
     response = await chat_engine.astream_chat(last_message.content, messages)
     # response = chat_engine.stream_chat(last_message.content, messages)
 
