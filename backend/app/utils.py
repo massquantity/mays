@@ -20,6 +20,9 @@ DATA_DIR = "./data"
 EMBED_DIR = "./embed"
 IMAGE_DIR = "./images"
 PERSIST_DIR = "./index_storage"
+BM25_DIR = "./bm25_retriever"
+VECTOR_INDEX_ID = "vector_index"
+TREE_INDEX_ID = "tree_index"
 
 logger = logging.getLogger("uvicorn")
 

@@ -3,20 +3,28 @@ import logging
 import subprocess
 from pathlib import Path
 
+import Stemmer
 import pymupdf
 from fastapi import APIRouter, Depends, HTTPException
 from llama_index.core import (
     SimpleDirectoryReader,
     StorageContext,
+    TreeIndex,
     VectorStoreIndex,
     load_index_from_storage,
 )
+from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core.schema import BaseNode
+from llama_index.core.storage.docstore import BaseDocumentStore, SimpleDocumentStore
+from llama_index.retrievers.bm25 import BM25Retriever
 from pydantic import BaseModel
 from starlette import status
 
 from ...utils import (
+    BM25_DIR,
     DATA_DIR,
     PERSIST_DIR,
+    VECTOR_INDEX_ID,
     clear_index_dir,
     create_save_dirs,
     embed_model_settings,
@@ -102,24 +110,71 @@ def load_index(new_embed_model: str | None = None):
     if new_embed_model and new_embed_model != embed_model:
         logger.warning(
             f"The requested embed_model {new_embed_model} does not match with "
-            f"saved embed_model {embed_model}, use {embed_model}."
+            f"saved embed_model {embed_model}, using {embed_model}..."
         )
     embed_model_settings(embed_model, api_key)
     storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-    return load_index_from_storage(storage_context)  # index_id
+    vector_index = load_index_from_storage(storage_context, index_id=VECTOR_INDEX_ID)
+    # tree_index = load_index_from_storage(storage_context, index_id=TREE_INDEX_ID)
+    return vector_index
 
 
 @router.post("", dependencies=[Depends(create_save_dirs)])
 async def indexing(request: UploadRequest):
-    embed_model_settings(request.modelName, request.apiKey)
     file_path = save_file(request)
     documents = SimpleDirectoryReader(input_files=[file_path]).load_data()
+    splitter = SentenceSplitter(chunk_size=512, chunk_overlap=20)
+    nodes = await splitter.aget_nodes_from_documents(documents, show_progress=True)
     if is_dir_empty(PERSIST_DIR):
-        index = VectorStoreIndex.from_documents(documents, show_progress=True)
+        embed_model_settings(request.embedModel, request.apiKey)
+        docstore = SimpleDocumentStore()
+        await docstore.async_add_documents(nodes)
+        storage_context = StorageContext.from_defaults(docstore=docstore)
+        vector_index = init_vector_index(nodes, storage_context)
+        # tree_index = init_tree_index(nodes, storage_context)
+        save_embed_config(request.embedModel, request.apiKey)
     else:
-        index = load_index()
-        for doc in documents:
-            index.insert(doc, show_progress=True)
+        vector_index = load_index(request.embedModel)
+        vector_index.insert_nodes(nodes)
+        # tree_index.insert_nodes(nodes)
         clear_index_dir()
-    index.storage_context.persist(persist_dir=PERSIST_DIR)
-    logger.info(f"Finished indexing to {PERSIST_DIR}...")
+
+    vector_index.set_index_id(index_id=VECTOR_INDEX_ID)
+    vector_index.storage_context.persist(persist_dir=PERSIST_DIR)
+    # tree_index.set_index_id(index_id=TREE_INDEX_ID)
+    # tree_index.storage_context.persist(persist_dir=PERSIST_DIR)
+    # share same docstore across different index
+    # https://docs.llamaindex.ai/en/stable/examples/docstore/DocstoreDemo/
+    # assert vector_index.docstore is tree_index.docstore
+    bm25_retriever = init_bm25(vector_index.docstore)
+    bm25_retriever.persist(BM25_DIR)
+    logger.info(f"Finished indexing to {PERSIST_DIR} and {BM25_DIR}...")
+
+
+def init_vector_index(nodes: list[BaseNode], storage_context: StorageContext):
+    return VectorStoreIndex(
+        nodes=nodes,
+        storage_context=storage_context,
+        # use_async=True,
+        show_progress=True,
+    )
+
+
+def init_tree_index(nodes: list[BaseNode], storage_context: StorageContext):
+    return TreeIndex(
+        nodes=nodes,
+        num_children=10,
+        storage_context=storage_context,
+        # use_async=True,
+        show_progress=True,
+    )
+
+
+def init_bm25(docstore: BaseDocumentStore):
+    top_k = min(2, len(docstore.docs))
+    return BM25Retriever.from_defaults(
+        docstore=docstore,
+        similarity_top_k=top_k,
+        stemmer=Stemmer.Stemmer("english"),
+        language="english",
+    )
