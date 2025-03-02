@@ -16,11 +16,12 @@ from llama_index.llms.mistralai import MistralAI
 from llama_index.llms.ollama import Ollama
 from llama_index.llms.openai import OpenAI
 
-DATA_DIR = "./data"
-EMBED_DIR = "./embed"
-IMAGE_DIR = "./images"
-PERSIST_DIR = "./index_storage"
-BM25_DIR = "./bm25_retriever"
+PERSIST_DIR = Path.cwd().absolute() / "persist_dir"
+DATA_DIR = str(PERSIST_DIR / "data")
+EMBED_DIR = str(PERSIST_DIR / "embed")
+IMAGE_DIR = str(PERSIST_DIR / "images")
+INDEX_DIR = str(PERSIST_DIR / "index_storage")
+BM25_DIR = str(PERSIST_DIR / "bm25_retriever")
 VECTOR_INDEX_ID = "vector_index"
 TREE_INDEX_ID = "tree_index"
 
@@ -28,10 +29,10 @@ logger = logging.getLogger("uvicorn")
 
 
 def create_save_dirs():
-    for d in (DATA_DIR, IMAGE_DIR, PERSIST_DIR):
+    for d in (DATA_DIR, IMAGE_DIR, INDEX_DIR):
         d = Path(d)
         if not (d.exists() and d.is_dir()):
-            d.mkdir()
+            d.mkdir(parents=True)
 
 
 def is_dir_empty(directory: str):
@@ -40,7 +41,7 @@ def is_dir_empty(directory: str):
 
 
 def clear_index_dir():
-    index_dir = Path(PERSIST_DIR)
+    index_dir = Path(INDEX_DIR)
     for i in index_dir.iterdir():
         if i.is_file():
             i.unlink()

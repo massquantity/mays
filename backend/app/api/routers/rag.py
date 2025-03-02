@@ -19,7 +19,7 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from .indexing import load_index
-from ...utils import BM25_DIR, EMBED_DIR, PERSIST_DIR, global_model_settings
+from ...utils import BM25_DIR, EMBED_DIR, INDEX_DIR, global_model_settings
 
 REACT_CONTEXT_PROMPT = (
     "If the question can be answered directly from your internal knowledge, "
@@ -27,14 +27,14 @@ REACT_CONTEXT_PROMPT = (
     "private, or domain-specific data that you do not already know."
 )
 
+# "Important: If the question can be answered directly from your internal knowledge, "
+# "DO NOT use the context. Only use context when the question requires real-time, "
+# "private, or domain-specific data that you do not already know.\n"
 TREE_SUMMARIZE_PROMPT = (
     "Context information from multiple sources is below.\n"
     "---------------------\n"
     "{context_str}\n"
     "---------------------\n"
-    # "Important: If the question can be answered directly from your internal knowledge, "
-    # "DO NOT use the context. Only use context when the question requires real-time, "
-    # "private, or domain-specific data that you do not already know.\n"
     "Important: First try to answer the query using only the information provided "
     "in the context above. If you cannot find the answer in the context, "
     "then and only then use your general knowledge to provide the best possible answer. "
@@ -63,7 +63,7 @@ class ChatRequest(BaseModel):
 
 
 async def get_chat_engine():
-    logger.info(f"Loading index from {PERSIST_DIR} and {BM25_DIR}...")
+    logger.info(f"Loading index from {INDEX_DIR} and {BM25_DIR}...")
     vector_index = load_index()
     vector_retriever = vector_index.as_retriever(similarity_top_k=4, verbose=True)
     # tree_retriever = tree_index.as_retriever(
@@ -188,8 +188,8 @@ async def simple_chat(chatRequest: ChatRequest):
 
 @router.post("")
 async def chat(request: Request, chatRequest: ChatRequest):
-    if Path(PERSIST_DIR).exists():
+    if Path(INDEX_DIR).exists():
         return await rag_chat(request, chatRequest)
     else:
-        logger.info(f"No index found in {PERSIST_DIR}, using simple chat...")
+        logger.info(f"No index found in {INDEX_DIR}, using simple chat...")
         return await simple_chat(chatRequest)

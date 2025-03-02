@@ -23,7 +23,7 @@ from starlette import status
 from ...utils import (
     BM25_DIR,
     DATA_DIR,
-    PERSIST_DIR,
+    INDEX_DIR,
     VECTOR_INDEX_ID,
     clear_index_dir,
     create_save_dirs,
@@ -113,7 +113,7 @@ def load_index(new_embed_model: str | None = None):
             f"saved embed_model {embed_model}, using {embed_model}..."
         )
     embed_model_settings(embed_model, api_key)
-    storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
+    storage_context = StorageContext.from_defaults(persist_dir=INDEX_DIR)
     vector_index = load_index_from_storage(storage_context, index_id=VECTOR_INDEX_ID)
     # tree_index = load_index_from_storage(storage_context, index_id=TREE_INDEX_ID)
     return vector_index
@@ -125,7 +125,7 @@ async def indexing(request: UploadRequest):
     documents = SimpleDirectoryReader(input_files=[file_path]).load_data()
     splitter = SentenceSplitter(chunk_size=512, chunk_overlap=20)
     nodes = await splitter.aget_nodes_from_documents(documents, show_progress=True)
-    if is_dir_empty(PERSIST_DIR):
+    if is_dir_empty(INDEX_DIR):
         embed_model_settings(request.embedModel, request.apiKey)
         docstore = SimpleDocumentStore()
         await docstore.async_add_documents(nodes)
@@ -140,7 +140,7 @@ async def indexing(request: UploadRequest):
         clear_index_dir()
 
     vector_index.set_index_id(index_id=VECTOR_INDEX_ID)
-    vector_index.storage_context.persist(persist_dir=PERSIST_DIR)
+    vector_index.storage_context.persist(persist_dir=INDEX_DIR)
     # tree_index.set_index_id(index_id=TREE_INDEX_ID)
     # tree_index.storage_context.persist(persist_dir=PERSIST_DIR)
     # share same docstore across different index
@@ -148,7 +148,7 @@ async def indexing(request: UploadRequest):
     # assert vector_index.docstore is tree_index.docstore
     bm25_retriever = init_bm25(vector_index.docstore)
     bm25_retriever.persist(BM25_DIR)
-    logger.info(f"Finished indexing to {PERSIST_DIR} and {BM25_DIR}...")
+    logger.info(f"Finished indexing to {INDEX_DIR} and {BM25_DIR}...")
 
 
 def init_vector_index(nodes: list[BaseNode], storage_context: StorageContext):

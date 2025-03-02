@@ -18,7 +18,7 @@ from app.api.routers.indexing import UploadRequest, load_index, save_file
 from app.api.routers.rag import ChatRequest
 from app.utils import (
     IMAGE_DIR,
-    PERSIST_DIR,
+    INDEX_DIR,
     clear_index_dir,
     create_save_dirs,
     is_dir_empty,
@@ -42,7 +42,7 @@ app.add_middleware(
 
 def init_app_state():
     index = image_name = None
-    if Path(PERSIST_DIR).exists() and not is_dir_empty(PERSIST_DIR):
+    if Path(INDEX_DIR).exists() and not is_dir_empty(INDEX_DIR):
         index = load_index()
     if Path(IMAGE_DIR).exists() and not is_dir_empty(IMAGE_DIR):
         image_files = Path(IMAGE_DIR).glob("*")
@@ -74,9 +74,9 @@ async def upload_file(request: UploadRequest):
     else:
         index.insert(documents[0], show_progress=True)
         clear_index_dir()
-    index.storage_context.persist(persist_dir=PERSIST_DIR)
+    index.storage_context.persist(persist_dir=INDEX_DIR)
     app.state.index = index
-    logger.info(f"Finished indexing to {PERSIST_DIR}...")
+    logger.info(f"Finished indexing to {INDEX_DIR}...")
 
 
 @app.post("/api/image", dependencies=[Depends(create_save_dirs)])
