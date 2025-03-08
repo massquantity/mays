@@ -7,6 +7,7 @@ dependencies = [
     "docx2txt==0.8",
     "fastapi==0.111.0",
     "httpx==0.27.2",
+    "jieba==0.42.1",
     "litellm==1.60.0",
     "llama-index-core==0.12.14",
     "llama-index-embeddings-huggingface==0.5.1",
