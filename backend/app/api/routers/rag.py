@@ -36,7 +36,7 @@ TREE_SUMMARIZE_PROMPT = (
     "{context_str}\n"
     "---------------------\n"
     "Important: First try to answer the query using only the information provided "
-    "in the context above. If you cannot find the answer in the context, "
+    "in the context above. If you cannot find answer or relevant information in the context, "
     "then and only then use your general knowledge to provide the best possible answer. "
     "Do not indicate whether you used context or general knowledge in your response.\n"
     "Query: {query_str}\n"

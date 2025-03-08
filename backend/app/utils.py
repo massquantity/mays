@@ -17,11 +17,11 @@ from llama_index.llms.ollama import Ollama
 from llama_index.llms.openai import OpenAI
 
 PERSIST_DIR = Path.cwd().absolute() / "persist_dir"
-DATA_DIR = str(PERSIST_DIR / "data")
-EMBED_DIR = str(PERSIST_DIR / "embed")
-IMAGE_DIR = str(PERSIST_DIR / "images")
-INDEX_DIR = str(PERSIST_DIR / "index_storage")
-BM25_DIR = str(PERSIST_DIR / "bm25_retriever")
+DATA_DIR = PERSIST_DIR / "data"
+EMBED_DIR = PERSIST_DIR / "embed"
+IMAGE_DIR = PERSIST_DIR / "images"
+INDEX_DIR = PERSIST_DIR / "index_storage"
+BM25_DIR = PERSIST_DIR / "bm25_retriever"
 VECTOR_INDEX_ID = "vector_index"
 TREE_INDEX_ID = "tree_index"
 
