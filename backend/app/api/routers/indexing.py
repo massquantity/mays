@@ -16,10 +16,10 @@ from llama_index.core import (
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import BaseNode
 from llama_index.core.storage.docstore import BaseDocumentStore, SimpleDocumentStore
-from llama_index.retrievers.bm25 import BM25Retriever
 from pydantic import BaseModel
 from starlette import status
 
+from ...bm25 import MixedLanguageBM25Retriever
 from ...utils import (
     BM25_DIR,
     DATA_DIR,
@@ -172,9 +172,15 @@ def init_tree_index(nodes: list[BaseNode], storage_context: StorageContext):
 
 def init_bm25(docstore: BaseDocumentStore):
     top_k = min(2, len(docstore.docs))
-    return BM25Retriever.from_defaults(
+    # return BM25Retriever.from_defaults(
+    #     docstore=docstore,
+    #     similarity_top_k=top_k,
+    #     stemmer=Stemmer.Stemmer("english"),
+    #     language="english",
+    # )
+    return MixedLanguageBM25Retriever(
         docstore=docstore,
         similarity_top_k=top_k,
         stemmer=Stemmer.Stemmer("english"),
-        language="english",
+        verbose=True,
     )

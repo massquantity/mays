@@ -13,12 +13,12 @@ from llama_index.core.response_synthesizers import TreeSummarize
 from llama_index.core.retrievers import QueryFusionRetriever
 from llama_index.core.tools import QueryEngineTool
 from llama_index.postprocessor.voyageai_rerank import VoyageAIRerank
-from llama_index.retrievers.bm25 import BM25Retriever
 from mistralai import Mistral
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from .indexing import load_index
+from ...bm25 import MixedLanguageBM25Retriever
 from ...utils import BM25_DIR, EMBED_DIR, INDEX_DIR, global_model_settings
 
 REACT_CONTEXT_PROMPT = (
@@ -71,7 +71,7 @@ async def get_chat_engine():
     #     child_branch_factor=2,  # 4, 10
     #     verbose=True,
     # )
-    bm25_retriever = BM25Retriever.from_persist_dir(BM25_DIR)
+    bm25_retriever = MixedLanguageBM25Retriever.from_persist_dir(BM25_DIR)
     retriever = QueryFusionRetriever(
         [vector_retriever, bm25_retriever],
         similarity_top_k=10,
