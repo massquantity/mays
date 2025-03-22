@@ -84,46 +84,38 @@ class MixedLanguageBM25Retriever(BaseRetriever):
         return results
 
     def _tokenize_mixed_text(self, text: str) -> list[str]:
-        """
-        Tokenize text containing both Chinese and English.
-        - Chinese segments are tokenized with jieba
-        - English segments are tokenized and stemmed using the original approach
-        """
-        # noinspection RegExpSimplifiable
-        english_pattern = re.compile(r"[a-zA-Z0-9_]+")
-        segments = []
-        last_end = 0
-        for match in english_pattern.finditer(text):
-            start, end = match.span()
-            if start > last_end:
-                segments.append((text[last_end:start], 'zh'))
-            segments.append((match.group(), 'en'))
-            last_end = end
+        """Tokenize text containing both Chinese and English.
 
-        # Add any remaining Chinese text
-        if last_end < len(text):
-            segments.append((text[last_end:], 'zh'))
-
+        1. Extracting English text and processing with standard tokenization and stemming
+        2. Extracting Chinese text and processing with jieba
+        3. Combining the results
+        """
         all_tokens = []
-        for segment_text, lang in segments:
-            if lang == 'zh':
-                tokens = jieba.cut_for_search(segment_text)
-                chinese_tokens = [t for t in tokens if t not in self.cn_stopwords]
-                all_tokens.extend(chinese_tokens)
-            else:
-                english_tokens = bm25s.tokenize(
-                    segment_text,
-                    stopwords="english",
-                    stemmer=self.stemmer if not self.skip_stemming else None,
-                    token_pattern=self.token_pattern,
-                    return_ids=False,
-                )
-                # bm25s.tokenize returns a list of lists when given a single string,
-                # so we need to extract the inner list.
-                if isinstance(english_tokens, list) and len(english_tokens) == 1:
-                    english_tokens = english_tokens[0]
+        # regex to match Chinese characters and punctuation
+        chinese_pattern = re.compile(r"[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]+")
+        english_only_text = chinese_pattern.sub(" ", text)
+        if english_only_text.strip():
+            english_tokens = bm25s.tokenize(
+                english_only_text,
+                stopwords="english",
+                stemmer=self.stemmer if not self.skip_stemming else None,
+                token_pattern=self.token_pattern,
+                return_ids=False,
+            )
+            # bm25s.tokenize returns a list of lists when given a single string,
+            # so we need to extract the inner list.
+            if isinstance(english_tokens, list) and len(english_tokens) == 1:
+                english_tokens = english_tokens[0]
+            all_tokens.extend(english_tokens)
 
-                all_tokens.extend(english_tokens)
+        # regex to match Latin characters and common punctuation
+        english_pattern = re.compile(r"[a-zA-Z\d\s!\"#$%&\'()*+,-./:;<=>?@[\\\]^_`{|}~]+")
+        chinese_only_text = english_pattern.sub("", text)
+        if chinese_only_text:
+            tokens = jieba.cut_for_search(chinese_only_text)
+            for t in tokens:
+                if t not in self.cn_stopwords:
+                    all_tokens.append(t)
 
         return all_tokens
 
