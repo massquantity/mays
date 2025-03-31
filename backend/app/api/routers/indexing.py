@@ -1,5 +1,4 @@
 import base64
-import logging
 import subprocess
 from pathlib import Path
 
@@ -20,6 +19,7 @@ from pydantic import BaseModel
 from starlette import status
 
 from ...bm25 import MixedLanguageBM25Retriever
+from ...logger import get_logger
 from ...utils import (
     BM25_DIR,
     DATA_DIR,
@@ -33,7 +33,7 @@ from ...utils import (
     save_embed_config,
 )
 
-logger = logging.getLogger("uvicorn")
+logger = get_logger(__name__)
 
 router = APIRouter()
 
@@ -53,12 +53,13 @@ def save_file(request: UploadRequest):
     if request.isBase64:
         file_content = base64.b64decode(file_content)
         if file_name.endswith("pdf") and is_scanned_pdf(file_content):
+            logger.info(f"Detected scanned PDF: {file_name}, performing OCR")
             ocr_pdf(file_content, file_path)
         else:
             file_path.write_bytes(file_content)
     else:
         file_path.write_text(file_content, encoding="utf-8")
-    logger.info(f"Finished writing data to {DATA_DIR}...")
+    logger.info(f"Finished writing data to {DATA_DIR}/{file_name}")
     return file_path
 
 
@@ -92,11 +93,13 @@ def _check_tesseract_installed():
             ["tesseract", "--version"], stdout=subprocess.PIPE, text=True
         )
         if res.returncode != 0:
+            logger.error("Tesseract is not installed or not working properly")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="`tesseract` is not installed.",
             )
     except FileNotFoundError as err:
+        logger.error("Tesseract is not installed", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="`tesseract` is not installed.",
@@ -113,6 +116,8 @@ def load_index(new_embed_model: str | None = None):
             f"saved embed_model {embed_model}, using {embed_model}..."
         )
     embed_model_settings(embed_model, api_key)
+    
+    logger.debug(f"Loading index from storage at {INDEX_DIR}")
     storage_context = StorageContext.from_defaults(persist_dir=INDEX_DIR)
     vector_index = load_index_from_storage(storage_context, index_id=VECTOR_INDEX_ID)
     # tree_index = load_index_from_storage(storage_context, index_id=TREE_INDEX_ID)

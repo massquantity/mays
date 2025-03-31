@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 from pathlib import Path
 
@@ -16,6 +15,8 @@ from llama_index.llms.mistralai import MistralAI
 from llama_index.llms.ollama import Ollama
 from llama_index.llms.openai import OpenAI
 
+from .logger import get_logger
+
 PERSIST_DIR = Path.cwd().absolute() / "persist_dir"
 DATA_DIR = PERSIST_DIR / "data"
 EMBED_DIR = PERSIST_DIR / "embed"
@@ -25,7 +26,7 @@ BM25_DIR = PERSIST_DIR / "bm25_retriever"
 VECTOR_INDEX_ID = "vector_index"
 TREE_INDEX_ID = "tree_index"
 
-logger = logging.getLogger("uvicorn")
+logger = get_logger(__name__)
 
 
 def create_save_dirs():
@@ -53,6 +54,7 @@ def check_api_key():
         or "mistral" in Settings.llm.class_name()
     )
     if is_mistral_model and not os.getenv("MISTRAL_API_KEY"):
+        logger.error("Missing Mistral API key")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid mistral api key. Get it from https://console.mistral.ai/api-keys/",
@@ -64,7 +66,7 @@ def load_embed_config():
     if config_path.exists():
         return json.loads(config_path.read_text())
     else:
-        logger.error("No embed_config found, file should be indexed first.")
+        logger.error("No embed_config found, file should be indexed first")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No embed_config found.",

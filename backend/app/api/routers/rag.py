@@ -1,5 +1,4 @@
 import json
-import logging
 from pathlib import Path
 from typing import List
 
@@ -19,6 +18,7 @@ from pydantic import BaseModel
 
 from .indexing import load_index
 from ...bm25 import MixedLanguageBM25Retriever
+from ...logger import get_logger
 from ...utils import BM25_DIR, EMBED_DIR, INDEX_DIR, global_model_settings
 
 REACT_CONTEXT_PROMPT = (
@@ -43,7 +43,7 @@ TREE_SUMMARIZE_PROMPT = (
     "Answer: "
 )
 
-logger = logging.getLogger("uvicorn")
+logger = get_logger(__name__)
 
 router = APIRouter()
 
